@@ -1,0 +1,49 @@
+name: benchmarks
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  pytest-benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up conda environment
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-version: latest
+          activate-environment: rivgraph
+          environment-file: environment.yml
+          auto-activate-base: false
+          use-mamba: true
+
+      - name: Install RivGraph
+        shell: bash -el {0}
+        run: |
+          pip install -e . --no-deps
+          pip install "pytest-benchmark>=4,<6"
+
+      - name: Run benchmark suite
+        shell: bash -el {0}
+        run: |
+          mkdir -p bench_results
+          python -m pytest bench/ -ra \
+            --benchmark-columns=rounds,min,median,mean,stddev \
+            --benchmark-sort=name \
+            --benchmark-json=bench_results/baseline.json
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-baseline
+          path: bench_results/baseline.json
