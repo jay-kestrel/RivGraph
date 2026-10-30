@@ -198,3 +198,25 @@ if _HAVE_PYTEST_BENCHMARK:
         """Embed environment, checksum, and workload metadata in the JSON artifact."""
         if _ENV_INFO["packages"]:
             output_json["rivgraph_bench_env"] = _ENV_INFO
+
+
+
+@pytest.fixture(scope="session")
+def brahmaputra_skeleton():
+    """Largest committed mask, staged once outside the timed region."""
+    import rasterio
+    from rivgraph import mask_to_graph
+
+    path = REPO_ROOT / "examples/data/Brahmaputra_Braided_River/Brahmaputra_mask.tif"
+    with rasterio.open(path) as src:
+        mask = src.read(1)
+    skeleton = mask_to_graph.skeletonize_mask(mask)
+    _ENV_INFO["packages"] = _package_versions()
+    _ENV_INFO["inputs"]["brahmaputra_mask"] = {
+        "path": str(path.relative_to(REPO_ROOT)),
+        "sha256": _sha256(path),
+        "bytes": path.stat().st_size,
+    }
+    _ENV_INFO["workload"]["brahmaputra_shape"] = list(mask.shape)
+    _ENV_INFO["workload"]["brahmaputra_skeleton_pixels"] = int(np.count_nonzero(skeleton))
+    return skeleton

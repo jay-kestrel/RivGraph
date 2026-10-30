@@ -76,3 +76,16 @@ def test_benchmark_assign_flow_directions(benchmark, directionality_stage):
         rounds=BENCH_ROUNDS,
         warmup_rounds=BENCH_WARMUP_ROUNDS,
     )
+
+
+@pytest.mark.parametrize("backend", ["python", "native"])
+def test_benchmark_brahmaputra_walker(benchmark, brahmaputra_skeleton, backend, monkeypatch):
+    """Paired largest-mask R2 gate: public API, identical skeleton and process."""
+    monkeypatch.setenv("PYDELTARCM_NATIVE", "0" if backend == "python" else "1")
+    benchmark.extra_info["backend"] = backend
+    benchmark.pedantic(
+        mask_to_graph.skel_to_graph,
+        args=(brahmaputra_skeleton,),
+        rounds=BENCH_ROUNDS,
+        warmup_rounds=BENCH_WARMUP_ROUNDS,
+    )
