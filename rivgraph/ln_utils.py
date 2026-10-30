@@ -1403,6 +1403,15 @@ def add_artificial_nodes(links, nodes, imshape, gt):
     # Add the aritifical node to the proper links
     for p in pairs:  # Note that pairs can be triplets etc. as well
 
+        # find_parallel_links can emit overlapping entries for the same node
+        # pair (e.g., a pair and a triplet sharing links), and breaking a link
+        # deletes it, so later entries may reference deleted ids. Restrict
+        # each entry to the links that still exist; fewer than two survivors
+        # means this parallel set was already fully split by an earlier entry.
+        p = [l for l in p if l in links['id']]
+        if len(p) < 2:
+            continue
+
         # Choose the longest link(s) to add the artificial node
         lens = [links['len'][links['id'].index(l)] for l in p]
         minlenidx = np.argmin(lens)
@@ -1458,6 +1467,11 @@ def add_artificial_nodes(links, nodes, imshape, gt):
 
             # Keep track of the added aritifical nodes
             arts.append(nodes['id'][nodes['idx'].index(idx[halfidx])])
+
+    # Refresh 'parallels' so its entries match the post-split topology;
+    # directionality.set_parallel_links consumes these entries and must not
+    # encounter deleted link ids.
+    links, nodes = find_parallel_links(links, nodes)
 
     # Remove lengths from links
     _ = links.pop('len', None)
