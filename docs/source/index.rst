@@ -26,6 +26,8 @@ Documentation
    quickstart/index
    background/index
    install/index
+   native/index
+   cli/index
    examples/index
    maskmaking/index
    shoreline/index
