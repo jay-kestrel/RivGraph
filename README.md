@@ -74,6 +74,15 @@ The paired Brahmaputra benchmark uses the same staged skeleton for both
 backends, with one warm-up and five measured rounds per backend. Versions,
 checksums, medians and minima are included in the benchmark output.
 
+## Output and logging
+
+RivGraph logs through [loguru](https://loguru.readthedocs.io); library code never uses `print()`.
+
+- **Console**: With `verbose=True` (on `rivnetwork`, `river`, or `delta`), progress messages are written to stdout as bare text -- no timestamps or level prefixes. With `verbose=False`, the classes write nothing to stdout.
+- **Log file**: Every `rivnetwork`, `river`, or `delta` run writes `<name>_log.log` beside the results folder, regardless of `verbose`. Each record is timestamped: `[YYYY-MM-DD at HH:mm:ss] | <message>`.
+- **Levels**: The file and console sinks apply their own level filters. Routine progress is logged at `info`; operationally important conditions -- continuity violations, unfixable cycles -- at `warning`; diagnostic traces (e.g. the skeleton walker's per-step state) at `debug`.
+- **Warnings**: I/O and export conditions and experimental-metric notices go through Python's `warnings` module. They appear on stderr regardless of `verbose` and respond to the standard `warnings` filtering machinery.
+
 ## Use of AI
 
 RivGraph was initially released before the advent of LLMs and thus v0.5.0 was written entirely without AI assistance. However, the v1.0 release was made possible through efficiencies provided by relying heavily on AI coding (mainly OpenAI tools). 
