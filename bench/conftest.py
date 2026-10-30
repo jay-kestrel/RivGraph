@@ -220,3 +220,25 @@ def brahmaputra_skeleton():
     _ENV_INFO["workload"]["brahmaputra_shape"] = list(mask.shape)
     _ENV_INFO["workload"]["brahmaputra_skeleton_pixels"] = int(np.count_nonzero(skeleton))
     return skeleton
+
+
+@pytest.fixture(scope="session")
+def brahmaputra_width_stage(brahmaputra_skeleton):
+    """Inputs for the paired largest-mask widths stage (R3 gate).
+
+    Links come from the native walker (R2 proved it exactly equal to the
+    Python walker), so the paired rounds below A/B only the width backend.
+    pixlen=1 keeps the workload in pixel units.
+    """
+    import rasterio
+    from scipy.ndimage import distance_transform_edt
+
+    from rivgraph import mask_to_graph
+
+    path = REPO_ROOT / "examples/data/Brahmaputra_Braided_River/Brahmaputra_mask.tif"
+    with rasterio.open(path) as src:
+        mask = src.read(1)
+    links, _ = mask_to_graph.skel_to_graph(brahmaputra_skeleton)
+    idt = distance_transform_edt(mask > 0)
+    _ENV_INFO["workload"]["brahmaputra_width_links"] = len(links["id"])
+    return links, idt, 1.0

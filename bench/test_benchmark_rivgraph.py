@@ -11,6 +11,10 @@ Stages and workloads, all pinned to the committed Colville inputs
    Colville network (Dijkstra shortest paths, cycle fixing, manual fixes
    from the committed csv path when present).
 
+Paired python-vs-native gates on the largest committed mask follow the
+stages: the Brahmaputra walker (R2) and the Brahmaputra widths phase (R3),
+both parameterized over both backends on identical inputs.
+
 Repeats are honest because each round starts from identical state: stages 1
 and 2 are pure functions over fixed arrays (``skel_to_graph`` pads a copy of
 its input internally), and stage 3's untimed setup restores the
@@ -86,6 +90,26 @@ def test_benchmark_brahmaputra_walker(benchmark, brahmaputra_skeleton, backend, 
     benchmark.pedantic(
         mask_to_graph.skel_to_graph,
         args=(brahmaputra_skeleton,),
+        rounds=BENCH_ROUNDS,
+        warmup_rounds=BENCH_WARMUP_ROUNDS,
+    )
+
+
+@pytest.mark.parametrize("backend", ["python", "native"])
+def test_benchmark_brahmaputra_widths(benchmark, brahmaputra_width_stage, backend, monkeypatch):
+    """Paired largest-mask R3 gate: scan_mask ray marching over the same links."""
+    monkeypatch.setenv("PYDELTARCM_NATIVE", "0" if backend == "python" else "1")
+    benchmark.extra_info["backend"] = backend
+    links_base, idt, pixlen = brahmaputra_width_stage
+
+    def make_args():
+        # Fresh links dict per round, built in the untimed setup so rounds
+        # never observe each other's appended width/length keys.
+        return (copy.deepcopy(links_base), idt), {"pixlen": pixlen}
+
+    benchmark.pedantic(
+        ln_utils.link_widths_and_lengths,
+        setup=make_args,
         rounds=BENCH_ROUNDS,
         warmup_rounds=BENCH_WARMUP_ROUNDS,
     )
