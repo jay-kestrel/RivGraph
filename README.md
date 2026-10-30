@@ -99,6 +99,32 @@ RivGraph logs through [loguru](https://loguru.readthedocs.io); library code neve
 - **Levels**: The file and console sinks apply their own level filters. Routine progress is logged at `info`; operationally important conditions -- continuity violations, unfixable cycles -- at `warning`; diagnostic traces (e.g. the skeleton walker's per-step state) at `debug`.
 - **Warnings**: I/O and export conditions and experimental-metric notices go through Python's `warnings` module. They appear on stderr regardless of `verbose` and respond to the standard `warnings` filtering machinery.
 
+## COBOL walker backend (experimental)
+
+A GnuCOBOL port of the walker's numeric march lives in `cobol/` as an
+additional backend, parallel to the Rust one. `RIVGRAPH_COBOL=1` routes
+`mask_to_graph.skel_to_graph` to it and takes precedence over
+`PYDELTARCM_NATIVE`; unset behavior is unchanged. Build it from the repo root
+(requires `gnucobol3`, e.g. `apt install gnucobol3`):
+
+```bash
+make -C cobol
+RIVGRAPH_COBOL=1 python -m pytest tests
+python -m pytest bench/ --benchmark-json=benchmark.json
+```
+
+The COBOL kernel performs numeric traversal only: it marches a link path
+across the skeleton and stops at decision points, while Python keeps every
+set-order-sensitive decision (branchpoint clustering, emanator ordering,
+first-step selection) and hands the kernel canonicalized, sorted inputs —
+never randomness. Parity with the reference is exact (ordered IDs, pixel
+sequences, connectivity), held by the same fixture matrix as the Rust
+walker in `tests/test_cobol_walker.py`. Requesting `RIVGRAPH_COBOL=1`
+without a built backend raises rather than silently switching backends.
+The Brahmaputra benchmark gains a third `cobol` row; COBOL timings are
+feasibility measurements, not a performance gate. The kernel is
+single-threaded.
+
 ## Use of AI
 
 RivGraph was initially released before the advent of LLMs and thus v0.5.0 was written entirely without AI assistance. However, the v1.0 release was made possible through efficiencies provided by relying heavily on AI coding (mainly OpenAI tools). 

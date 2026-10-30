@@ -36,6 +36,14 @@ jobs:
           pip install -e . --no-deps
           pip install "pytest-benchmark>=4,<6"
 
+      - name: Install GnuCOBOL and build the COBOL backend
+        shell: bash -el {0}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gnucobol3
+          cobc --version
+          make -C cobol
+
       - name: Run benchmark suite
         shell: bash -el {0}
         run: |

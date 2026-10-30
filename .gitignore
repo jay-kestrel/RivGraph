@@ -11,6 +11,7 @@ __pycache__/
 # COBOL backend build artifacts (generated C from cobc -C)
 cobol/walker.c
 cobol/walker.c.h
+cobol/walker.c.l.h
 
 # Distribution / packaging
 .Python
