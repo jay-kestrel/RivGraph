@@ -1,0 +1,750 @@
+{
+    "machine_info": {
+        "node": "e2b.local",
+        "processor": "",
+        "machine": "x86_64",
+        "python_compiler": "Clang 23.1.3 ",
+        "python_implementation": "CPython",
+        "python_implementation_version": "3.12.16",
+        "python_version": "3.12.16",
+        "python_build": [
+            "main",
+            "Oct 26 2026 14:08:45"
+        ],
+        "release": "6.1.158+",
+        "system": "Linux",
+        "cpu": {
+            "python_version": "3.12.16.final.0 (64 bit)",
+            "cpuinfo_version": [
+                10,
+                1,
+                1
+            ],
+            "cpuinfo_version_string": "10.1.1",
+            "arch": "X86_64",
+            "bits": 64,
+            "count": 8,
+            "arch_string_raw": "x86_64",
+            "vendor_id_raw": "GenuineIntel",
+            "brand_raw": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+            "hz_advertised_friendly": "2.6000 GHz",
+            "hz_actual_friendly": "2.6000 GHz",
+            "hz_advertised": [
+                2600000000,
+                0
+            ],
+            "hz_actual": [
+                2600012000,
+                0
+            ],
+            "stepping": 6,
+            "model": 106,
+            "family": 6,
+            "flags": [
+                "3dnowprefetch",
+                "abm",
+                "adx",
+                "aes",
+                "apic",
+                "arat",
+                "arch_capabilities",
+                "avx",
+                "avx2",
+                "avx512_bitalg",
+                "avx512_vbmi2",
+                "avx512_vnni",
+                "avx512_vpopcntdq",
+                "avx512bitalg",
+                "avx512bw",
+                "avx512cd",
+                "avx512dq",
+                "avx512f",
+                "avx512ifma",
+                "avx512vbmi",
+                "avx512vbmi2",
+                "avx512vl",
+                "avx512vnni",
+                "avx512vpopcntdq",
+                "bmi1",
+                "bmi2",
+                "clflush",
+                "clflushopt",
+                "clwb",
+                "cmov",
+                "constant_tsc",
+                "cpuid",
+                "cpuid_fault",
+                "cx16",
+                "cx8",
+                "de",
+                "erms",
+                "f16c",
+                "fma",
+                "fpu",
+                "fsgsbase",
+                "fsrm",
+                "fxsr",
+                "gfni",
+                "hle",
+                "ht",
+                "hypervisor",
+                "ibpb",
+                "ibrs",
+                "ibrs_enhanced",
+                "invpcid",
+                "invpcid_single",
+                "lahf_lm",
+                "lm",
+                "mca",
+                "mce",
+                "md_clear",
+                "mmx",
+                "movbe",
+                "msr",
+                "mtrr",
+                "nonstop_tsc",
+                "nopl",
+                "nx",
+                "osxsave",
+                "pae",
+                "pat",
+                "pcid",
+                "pclmulqdq",
+                "pdpe1gb",
+                "pge",
+                "pni",
+                "popcnt",
+                "pse",
+                "pse36",
+                "rdpid",
+                "rdrand",
+                "rdrnd",
+                "rdseed",
+                "rdtscp",
+                "rep_good",
+                "rtm",
+                "sep",
+                "sha",
+                "sha_ni",
+                "smap",
+                "smep",
+                "ss",
+                "ssbd",
+                "sse",
+                "sse2",
+                "sse4_1",
+                "sse4_2",
+                "ssse3",
+                "stibp",
+                "syscall",
+                "tsc",
+                "tsc_adjust",
+                "tsc_deadline_timer",
+                "tsc_known_freq",
+                "tscdeadline",
+                "umip",
+                "vaes",
+                "vme",
+                "vmx",
+                "vpclmulqdq",
+                "x2apic",
+                "xgetbv1",
+                "xsave",
+                "xsavec",
+                "xsaveopt",
+                "xsaves",
+                "xtopology"
+            ],
+            "l3_cache_size": 56623104,
+            "l2_cache_size": 5242880,
+            "l1_data_cache_size": 196608,
+            "l1_instruction_cache_size": 131072,
+            "l2_cache_line_size": 256,
+            "l2_cache_associativity": 6
+        }
+    },
+    "commit_info": {
+        "id": "8fe7e6a7fa87562d4968b0bc430d92f582726351",
+        "time": "2026-10-30T21:47:14Z",
+        "author_time": "2026-10-30T21:41:54Z",
+        "dirty": false,
+        "project": "RivGraph",
+        "branch": "refactor/directionality-reformulation"
+    },
+    "benchmarks": [
+        {
+            "group": null,
+            "name": "test_benchmark_cycle_search[repairable-python]",
+            "fullname": "bench/test_benchmark_directionality.py::test_benchmark_cycle_search[repairable-python]",
+            "params": {
+                "closed": false,
+                "backend": "0"
+            },
+            "param": "repairable-python",
+            "extra_info": {
+                "backend": "0",
+                "edges": [
+                    [
+                        0,
+                        1
+                    ],
+                    [
+                        1,
+                        2
+                    ],
+                    [
+                        2,
+                        3
+                    ],
+                    [
+                        3,
+                        4
+                    ],
+                    [
+                        4,
+                        5
+                    ],
+                    [
+                        5,
+                        6
+                    ],
+                    [
+                        6,
+                        7
+                    ],
+                    [
+                        7,
+                        8
+                    ],
+                    [
+                        8,
+                        9
+                    ],
+                    [
+                        9,
+                        0
+                    ],
+                    [
+                        10,
+                        0
+                    ],
+                    [
+                        9,
+                        11
+                    ]
+                ],
+                "candidates": [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9
+                ]
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.00015042900008666038,
+                "max": 0.0003273990000707272,
+                "mean": 0.00017605835001859304,
+                "stddev": 4.155391257866232e-05,
+                "rounds": 20,
+                "median": 0.0001608654998790371,
+                "iqr": 2.0308499983912043e-05,
+                "q1": 0.00015707100010331487,
+                "q3": 0.00017737950008722692,
+                "iqr_outliers": 2,
+                "stddev_outliers": 2,
+                "outliers": "2;2",
+                "ld15iqr": 0.00015042900008666038,
+                "hd15iqr": 0.0002488390000507934,
+                "ops": 5679.935089101952,
+                "total": 0.003521167000371861,
+                "data": [
+                    0.00017722000006870076,
+                    0.0003273990000707272,
+                    0.0001696819999779109,
+                    0.00016761100005169283,
+                    0.00016164999988177442,
+                    0.00015716100006102351,
+                    0.00016273699998237134,
+                    0.00018550899994806969,
+                    0.00016008099987629976,
+                    0.00015702200016676215,
+                    0.0002488390000507934,
+                    0.0001571200000398676,
+                    0.00018025400004262337,
+                    0.00015926299988677783,
+                    0.00015807800014044915,
+                    0.00015042900008666038,
+                    0.0001555129999815108,
+                    0.00015168499999163032,
+                    0.00017753900010575308,
+                    0.00015637499996046245
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_benchmark_cycle_search[repairable-native]",
+            "fullname": "bench/test_benchmark_directionality.py::test_benchmark_cycle_search[repairable-native]",
+            "params": {
+                "closed": false,
+                "backend": "1"
+            },
+            "param": "repairable-native",
+            "extra_info": {
+                "backend": "1",
+                "edges": [
+                    [
+                        0,
+                        1
+                    ],
+                    [
+                        1,
+                        2
+                    ],
+                    [
+                        2,
+                        3
+                    ],
+                    [
+                        3,
+                        4
+                    ],
+                    [
+                        4,
+                        5
+                    ],
+                    [
+                        5,
+                        6
+                    ],
+                    [
+                        6,
+                        7
+                    ],
+                    [
+                        7,
+                        8
+                    ],
+                    [
+                        8,
+                        9
+                    ],
+                    [
+                        9,
+                        0
+                    ],
+                    [
+                        10,
+                        0
+                    ],
+                    [
+                        9,
+                        11
+                    ]
+                ],
+                "candidates": [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9
+                ]
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 6.493000000773463e-06,
+                "max": 1.562500006002665e-05,
+                "mean": 7.767750003040418e-06,
+                "stddev": 2.076759062367345e-06,
+                "rounds": 20,
+                "median": 6.928999937372282e-06,
+                "iqr": 8.619998652648064e-07,
+                "q1": 6.837000114501279e-06,
+                "q3": 7.698999979766086e-06,
+                "iqr_outliers": 3,
+                "stddev_outliers": 2,
+                "outliers": "2;3",
+                "ld15iqr": 6.493000000773463e-06,
+                "hd15iqr": 9.022999847729807e-06,
+                "ops": 128737.40782190266,
+                "total": 0.00015535500006080838,
+                "data": [
+                    1.562500006002665e-05,
+                    1.0408999969513388e-05,
+                    9.022999847729807e-06,
+                    7.882000090830843e-06,
+                    8.380000053875847e-06,
+                    7.5159998687013285e-06,
+                    7.254999900396797e-06,
+                    6.493000000773463e-06,
+                    6.873999836898292e-06,
+                    6.853000058981706e-06,
+                    6.948999953237944e-06,
+                    6.904999963808223e-06,
+                    6.695000138279283e-06,
+                    6.90899992150662e-06,
+                    7.261000064318068e-06,
+                    6.821000170020852e-06,
+                    6.781999900340452e-06,
+                    6.8700001065735705e-06,
+                    6.797000196456793e-06,
+                    7.05599995853845e-06
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_benchmark_cycle_search[no-terminals-python]",
+            "fullname": "bench/test_benchmark_directionality.py::test_benchmark_cycle_search[no-terminals-python]",
+            "params": {
+                "closed": true,
+                "backend": "0"
+            },
+            "param": "no-terminals-python",
+            "extra_info": {
+                "backend": "0",
+                "edges": [
+                    [
+                        0,
+                        1
+                    ],
+                    [
+                        1,
+                        2
+                    ],
+                    [
+                        2,
+                        3
+                    ],
+                    [
+                        3,
+                        4
+                    ],
+                    [
+                        4,
+                        5
+                    ],
+                    [
+                        5,
+                        6
+                    ],
+                    [
+                        6,
+                        7
+                    ],
+                    [
+                        7,
+                        8
+                    ],
+                    [
+                        8,
+                        9
+                    ],
+                    [
+                        9,
+                        0
+                    ]
+                ],
+                "candidates": [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9
+                ]
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.010646575000009761,
+                "max": 0.011746528999992734,
+                "mean": 0.010934121750005943,
+                "stddev": 0.00025534759216397276,
+                "rounds": 20,
+                "median": 0.010880154999995284,
+                "iqr": 0.00024025800007621,
+                "q1": 0.01079661949995625,
+                "q3": 0.01103687750003246,
+                "iqr_outliers": 1,
+                "stddev_outliers": 4,
+                "outliers": "4;1",
+                "ld15iqr": 0.010646575000009761,
+                "hd15iqr": 0.011746528999992734,
+                "ops": 91.45681956572841,
+                "total": 0.21868243500011886,
+                "data": [
+                    0.010879840000143304,
+                    0.010646575000009761,
+                    0.01090425100005632,
+                    0.010931803000175933,
+                    0.011027644000023429,
+                    0.010824813999988692,
+                    0.010655422999889197,
+                    0.01071867700011353,
+                    0.01136669599986817,
+                    0.010785660000010466,
+                    0.010807578999902034,
+                    0.011057455000127447,
+                    0.010945596999818008,
+                    0.010684865000030186,
+                    0.010844237000128487,
+                    0.011046111000041492,
+                    0.010865147000004072,
+                    0.011746528999992734,
+                    0.010880469999847264,
+                    0.011063061999948332
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_benchmark_cycle_search[no-terminals-native]",
+            "fullname": "bench/test_benchmark_directionality.py::test_benchmark_cycle_search[no-terminals-native]",
+            "params": {
+                "closed": true,
+                "backend": "1"
+            },
+            "param": "no-terminals-native",
+            "extra_info": {
+                "backend": "1",
+                "edges": [
+                    [
+                        0,
+                        1
+                    ],
+                    [
+                        1,
+                        2
+                    ],
+                    [
+                        2,
+                        3
+                    ],
+                    [
+                        3,
+                        4
+                    ],
+                    [
+                        4,
+                        5
+                    ],
+                    [
+                        5,
+                        6
+                    ],
+                    [
+                        6,
+                        7
+                    ],
+                    [
+                        7,
+                        8
+                    ],
+                    [
+                        8,
+                        9
+                    ],
+                    [
+                        9,
+                        0
+                    ]
+                ],
+                "candidates": [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9
+                ]
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 5.964899992250139e-05,
+                "max": 9.734799982652476e-05,
+                "mean": 6.466684999395511e-05,
+                "stddev": 9.11023053919032e-06,
+                "rounds": 20,
+                "median": 6.126350001522951e-05,
+                "iqr": 4.4170000137455645e-06,
+                "q1": 6.030999998074549e-05,
+                "q3": 6.472699999449105e-05,
+                "iqr_outliers": 2,
+                "stddev_outliers": 2,
+                "outliers": "2;2",
+                "ld15iqr": 5.964899992250139e-05,
+                "hd15iqr": 8.175000016308331e-05,
+                "ops": 15463.873686339715,
+                "total": 0.0012933369998791022,
+                "data": [
+                    6.62229999761621e-05,
+                    6.267100002332882e-05,
+                    6.1184000060166e-05,
+                    9.734799982652476e-05,
+                    6.568699996023497e-05,
+                    6.377399995471933e-05,
+                    6.134299997029302e-05,
+                    6.007700017107709e-05,
+                    6.043500002306246e-05,
+                    8.175000016308331e-05,
+                    6.422199999178702e-05,
+                    6.154100015010044e-05,
+                    6.0532999896167894e-05,
+                    6.523199999719509e-05,
+                    6.015799999659066e-05,
+                    6.017900000188092e-05,
+                    6.050499996490544e-05,
+                    6.018499993842852e-05,
+                    5.964899992250139e-05,
+                    6.0640999890893e-05
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_benchmark_assign_flow_directions",
+            "fullname": "bench/test_benchmark_rivgraph.py::test_benchmark_assign_flow_directions",
+            "params": null,
+            "param": null,
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.6822643789998892,
+                "max": 0.7630383900000197,
+                "mean": 0.7206061286000022,
+                "stddev": 0.030983080053801532,
+                "rounds": 5,
+                "median": 0.7145182340000247,
+                "iqr": 0.04461544675001505,
+                "q1": 0.6995587377500101,
+                "q3": 0.7441741845000251,
+                "iqr_outliers": 0,
+                "stddev_outliers": 2,
+                "outliers": "2;0",
+                "ld15iqr": 0.6822643789998892,
+                "hd15iqr": 0.7630383900000197,
+                "ops": 1.3877206428188529,
+                "total": 3.603030643000011,
+                "data": [
+                    0.7053235240000504,
+                    0.737886116000027,
+                    0.7630383900000197,
+                    0.7145182340000247,
+                    0.6822643789998892
+                ],
+                "iterations": 1
+            }
+        }
+    ],
+    "datetime": "2026-10-30T21:53:01.230240+00:00",
+    "version": "5.3.0",
+    "rivgraph_bench_env": {
+        "python": "3.12.16",
+        "platform": "Linux-6.1.158+-x86_64-with-glibc2.41",
+        "machine": "x86_64",
+        "cpus": 8,
+        "packages": {
+            "rivgraph": "1.0.0",
+            "numpy": "2.2.6",
+            "scipy": "1.13.1",
+            "networkx": "3.2.1",
+            "scikit-image": "0.24.0",
+            "rasterio": "1.4.4",
+            "pytest": "8.4.2",
+            "pytest-benchmark": "5.3.0"
+        },
+        "inputs": {
+            "mask": {
+                "path": "examples/data/Colville_Delta/Colville_mask.tif",
+                "sha256": "e0c2221be98e300f9b1fc055bb88efc655705a58edfb1cae0be988f366f479ab",
+                "bytes": 2375971
+            },
+            "shoreline": {
+                "path": "examples/data/Colville_Delta/Colville_shoreline.shp",
+                "sha256": "2768019b1d3cd8e8e8b758dd04b97a56ef2d9cd6d4cd864238bfe9c930928648",
+                "bytes": 620
+            },
+            "inlet_nodes": {
+                "path": "examples/data/Colville_Delta/Colville_inlet_nodes.shp",
+                "sha256": "5048a068be12aa0b1290897b56c57e24227da17d584ebeb3aa9c14e069523726",
+                "bytes": 156
+            }
+        },
+        "workload": {
+            "skeleton_pixels": 23698,
+            "post_prune_links": 246,
+            "post_prune_nodes": 180,
+            "inlets": 2,
+            "outlets": 23
+        }
+    }
+}

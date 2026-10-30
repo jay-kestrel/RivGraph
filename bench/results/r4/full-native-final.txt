@@ -1,0 +1,15 @@
+.......................sssssssssssssssssssssssssssssssssssssssssssss.... [ 16%]
+........................................................................ [ 32%]
+........................................................................ [ 49%]
+........................................................................ [ 65%]
+........................................................................ [ 82%]
+........................................................................ [ 98%]
+.....                                                                    [100%]
+=========================== short test summary info ============================
+SKIPPED [3] tests/test_cobol_walker.py:61: COBOL backend not built; run `make -C cobol` (requires gnucobol3)
+SKIPPED [6] tests/test_cobol_walker.py:76: COBOL backend not built; run `make -C cobol` (requires gnucobol3)
+SKIPPED [4] tests/test_cobol_walker.py:101: COBOL backend not built; run `make -C cobol` (requires gnucobol3)
+SKIPPED [30] tests/test_cobol_walker.py:114: COBOL backend not built; run `make -C cobol` (requires gnucobol3)
+SKIPPED [1] tests/test_cobol_walker.py:125: COBOL backend not built; run `make -C cobol` (requires gnucobol3)
+SKIPPED [1] tests/test_cobol_walker.py:138: COBOL backend not built; run `make -C cobol` (requires gnucobol3)
+392 passed, 45 skipped in 109.99s (0:01:49)

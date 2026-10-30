@@ -3,6 +3,7 @@
 // Produced under U.S. Government contract 89233218CNA000001 for LANL.
 // See ../LICENSE.txt for the complete LANL notice and BSD-3 terms.
 mod branchpoints;
+mod directionality;
 mod graph;
 mod image;
 mod sets;
@@ -41,6 +42,7 @@ fn skel_to_graph<'py>(
 
 #[pymodule]
 fn _native(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(directionality::first_valid_cycle_flip, m)?)?;
     m.add_function(wrap_pyfunction!(skel_to_graph, m)?)?;
     m.add_function(wrap_pyfunction!(widths::scan_mask, m)?)?;
     m.add_function(wrap_pyfunction!(widths::link_widths_and_lengths, m)?)?;
