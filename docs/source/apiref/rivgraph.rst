@@ -8,7 +8,15 @@ rivgraph
    :members:
    :special-members:
 
+.. automodule:: rivgraph.cli
+   :members:
+   :special-members:
+
 .. automodule:: rivgraph.directionality
+   :members:
+   :special-members:
+
+.. automodule:: rivgraph.export_schema
    :members:
    :special-members:
 
@@ -33,6 +41,14 @@ rivgraph
    :special-members:
 
 .. automodule:: rivgraph.mask_utils
+   :members:
+   :special-members:
+
+.. automodule:: rivgraph.ordered_set
+   :members:
+   :special-members:
+
+.. automodule:: rivgraph.rasters
    :members:
    :special-members:
 
