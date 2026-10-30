@@ -84,3 +84,23 @@ python-source = "."
 module-name = "rivgraph._native"
 features = ["pyo3/extension-module"]
 include = ["LICENSE.txt"]
+
+[tool.pytest.ini_options]
+# Warnings are errors so that new warning regressions fail CI; the ignore
+# entries below are narrow exemptions for known, justified non-regressions.
+filterwarnings = [
+  "error",
+  # Upstream pyogrio<fixed-version imports shapely.geos at import time, which
+  # triggers a deprecation warning under modern Shapely. Third-party noise.
+  "ignore:The 'shapely\\.geos' module is deprecated, and will be removed in a future version\\.:DeprecationWarning:pyogrio.*",
+  # rasterio 1.4 warns about Affine's `*` operator from its own
+  # rasterio.transform module; third-party noise, not a RivGraph regression.
+  "ignore:Use `@` matmul instead of `\\*` mul operator:PendingDeprecationWarning:rasterio.*",
+  # RivGraph's own shapefile-lossiness contract warning. The regression suites
+  # exercise shapefile export but assert results, not warning absence.
+  "ignore:Exporting to ESRI Shapefile may be lossy:UserWarning",
+  # Known NumPy deprecations inside rivgraph.im_utils (np.in1d and
+  # array-to-scalar conversion); cleanup is tracked separately from logging.
+  "ignore:`in1d` is deprecated:DeprecationWarning",
+  "ignore:Conversion of an array with ndim > 0 to a scalar:DeprecationWarning",
+]
