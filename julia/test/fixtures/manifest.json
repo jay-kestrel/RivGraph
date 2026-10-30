@@ -1,0 +1,1555 @@
+{
+ "generator": "dump_fixtures.py",
+ "inputs": {
+  "walker/synthetic": {
+   "name": "synthetic",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     600,
+     600
+    ],
+    "dtype": "bool",
+    "sha256": "e6384926f4b15981fb6dbc081ec7f56609a8fe4a2da1df56f5d6facc42d6175e",
+    "bytes": 45128
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "d47f67ed76fcc680c262d71597be743a129a6c8c29b0cc70b8788cdeafa367a9",
+    "bytes": 29914
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "bec6e541870b84af6d5b7d12373fbc3f3a1e2c78207f7b1e171c52413fbb1d45",
+    "bytes": 7102
+   },
+   "counts": {
+    "links": 214,
+    "nodes": 354,
+    "skeleton_pixels": 3299
+   }
+  },
+  "walker/colville": {
+   "name": "colville",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     1540,
+     1540
+    ],
+    "dtype": "bool",
+    "sha256": "294de3f24d94faae56a2880d51469a0354f92e58624f02a4c51047c0f6c24767",
+    "bytes": 296578
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "ead72a8b452a08a007a98ff097a7d48c53fa50be97f011ef05a5f9e043608416",
+    "bytes": 223173
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "4aed13c4618e9145323d882f4d310a5746be391472345fe5278c0cad68f9622c",
+    "bytes": 24382
+   },
+   "counts": {
+    "links": 1031,
+    "nodes": 926,
+    "skeleton_pixels": 23698
+   }
+  },
+  "walker/brahmaputra": {
+   "name": "brahmaputra",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     4198,
+     1150
+    ],
+    "dtype": "bool",
+    "sha256": "7ebdcd0cb89c0db4e8cf2961a6a9578775bc1de51026cae0997a23101b6802bb",
+    "bytes": 603591
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "408494bc8639cdbd4c42d378a0b1a4ceb7635a7ef640fd1b70aa2023ce0cbe03",
+    "bytes": 440035
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "fb0f1625ce1d7b6e39a5c6ea4059ab3f76a856ddeb1f2c21c52462fdaf01d4da",
+    "bytes": 57612
+   },
+   "counts": {
+    "links": 2339,
+    "nodes": 1932,
+    "skeleton_pixels": 41742
+   }
+  },
+  "walker/small_line": {
+   "name": "small_line",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     31,
+     31
+    ],
+    "dtype": "bool",
+    "sha256": "85b3658b1ae7d93a4148069644ba3d27eb8075a0b96941a4bd9a4c997f0d3b55",
+    "bytes": 249
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "b3c29e08517b4bafd6773365100188c34763f6e1120944d65334e185ba4e3365",
+    "bytes": 277
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "2decbdb21048196b8784d12bc71ed4ffa144d096423db21127933414ce681e8a",
+    "bytes": 133
+   },
+   "counts": {
+    "links": 1,
+    "nodes": 2,
+    "skeleton_pixels": 25
+   }
+  },
+  "walker/small_diagonal": {
+   "name": "small_diagonal",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     31,
+     31
+    ],
+    "dtype": "bool",
+    "sha256": "203a7b799593bd5eb08cb638e5a8a79d19313884ebebd796ff38b26b124c7067",
+    "bytes": 249
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "46be9ab20ed79469349c62d99d67459c1898dc9f69467dce9a63f0137f03c083",
+    "bytes": 302
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "733ea4050b72a9d395feeaee7bfc305e5d46049efef836410a6957eb89dc96b5",
+    "bytes": 131
+   },
+   "counts": {
+    "links": 1,
+    "nodes": 2,
+    "skeleton_pixels": 31
+   }
+  },
+  "walker/small_cross": {
+   "name": "small_cross",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     31,
+     31
+    ],
+    "dtype": "bool",
+    "sha256": "ae3a4c18d44ba7ffbb289953b611d5ef9e5b9b8541bd651812a75ad06786a183",
+    "bytes": 249
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "2358ddf3d2886b016dff7d1ec117f25e12b91cd4fd9af7269ec4ae6e210bab7f",
+    "bytes": 451
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "8a8edb4a0964b8b58e18525d95fd9974f136f6a0e098a64639b2d2a37e157011",
+    "bytes": 181
+   },
+   "counts": {
+    "links": 4,
+    "nodes": 5,
+    "skeleton_pixels": 49
+   }
+  },
+  "walker/small_loop": {
+   "name": "small_loop",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     31,
+     31
+    ],
+    "dtype": "bool",
+    "sha256": "579a57e40b9266b41eba2c51865b5d027a8f93e0dc7fb225c22000bcfd153f0e",
+    "bytes": 249
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "b1f638d1c83bf485670168eb526dc2331ee80bc2f6e27c77557270beef71ceed",
+    "bytes": 145
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "8ffc2645784c1f152bb6aaddcba78dd27327cefde723a4730b5675345c2f4fda",
+    "bytes": 119
+   },
+   "counts": {
+    "links": 0,
+    "nodes": 1,
+    "skeleton_pixels": 76
+   }
+  },
+  "walker/small_disconnected": {
+   "name": "small_disconnected",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     31,
+     31
+    ],
+    "dtype": "bool",
+    "sha256": "47cdbec9511b2de10c21e3307d2972fa0c26843840524187566b64326d991ff6",
+    "bytes": 249
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "3f694a63577916b9771f8d6aa86da02ef29e4bc35b577d713d754b57fc1174f8",
+    "bytes": 411
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "228244aeb89b837972e3aec58c632deefa550d7fbcdd0ab7ee61335ffeae3fe7",
+    "bytes": 158
+   },
+   "counts": {
+    "links": 2,
+    "nodes": 4,
+    "skeleton_pixels": 50
+   }
+  },
+  "walker/small_edge": {
+   "name": "small_edge",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     31,
+     31
+    ],
+    "dtype": "bool",
+    "sha256": "b4e43127effcd4a6539d1ccdadca2ed103e4d3abef5adaf075de47d345645c3d",
+    "bytes": 249
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "fbc51f378984fec2443fba84821543e9594824e29b1d7fd3ec2d973700a8e69e",
+    "bytes": 302
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "2d37f5f2db4809ee90c0f7601a0b1f422fd3d7e173963d0dd36f093a0de47555",
+    "bytes": 131
+   },
+   "counts": {
+    "links": 1,
+    "nodes": 2,
+    "skeleton_pixels": 31
+   }
+  },
+  "walker/strided40": {
+   "name": "strided40",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     40,
+     40
+    ],
+    "dtype": "bool",
+    "sha256": "710ccd66875deb51399bcca5538c70f53e6ac8f27a21945bc96dd62eae2d4f92",
+    "bytes": 328
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "e7a342ac8b704e71a22a3ff6b457108ad342428c7cb677b83d749eb89b427e21",
+    "bytes": 345
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "d20dafcc3377840b26433d4a5ee46bf408462ed3b35e982f806d75484a016b47",
+    "bytes": 134
+   },
+   "counts": {
+    "links": 1,
+    "nodes": 2,
+    "skeleton_pixels": 36
+   }
+  },
+  "walker/eye10": {
+   "name": "eye10",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     10,
+     10
+    ],
+    "dtype": "bool",
+    "sha256": "e4db9d03142b2b05717e7c975c35b0581659fd924a4f9e6c407a6038b14b0e96",
+    "bytes": 141
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "98e18bcf3640511ac303bf32936ca0ed7492973fb1bc4977d6bdeab466b31dfe",
+    "bytes": 191
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "215c9c3989acaa8e0b780f15447bfec1142477b54e7b015a77102562019f581d",
+    "bytes": 130
+   },
+   "counts": {
+    "links": 1,
+    "nodes": 2,
+    "skeleton_pixels": 10
+   }
+  },
+  "walker/branched00": {
+   "name": "branched00",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "96665a62eaa8558b71fc86efb4d6635f9704e250bc8cc317e973b13fe6a144af",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "420b60137e295123c6a59437475678dfb6874301fef8cd069ef58a0423e621df",
+    "bytes": 2411
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "ebb7d6eefcac2de7ed53f3f8727491a7719a0e5840012d3eec8829d871fe44e1",
+    "bytes": 1073
+   },
+   "counts": {
+    "links": 39,
+    "nodes": 60,
+    "skeleton_pixels": 282
+   }
+  },
+  "walker/branched01": {
+   "name": "branched01",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "eb924e699dfe6e0e3dba2d0048f9ba3a4f94ce19e5423e0ea5c7491f7f8d4f29",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "b22299176c4eb422428b4b2aa67e759d50d6db20af7478e7373db95fe31b2165",
+    "bytes": 2565
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "1c487d138df10923b982f689b5f62f1062c4e7dc923432f1e22c330d6a316715",
+    "bytes": 1163
+   },
+   "counts": {
+    "links": 46,
+    "nodes": 62,
+    "skeleton_pixels": 275
+   }
+  },
+  "walker/branched02": {
+   "name": "branched02",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "1d8b7da47a7e376bbbdf02ddecaa5b670fe625823f3bf59ae0a44e6a812b346e",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "e9b6acb39a852620b8985a6bf5c441d82307344820f2e5705ffca6a0d395baba",
+    "bytes": 2709
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "6e42d8af78299a3bd466b0ca1ba5e6f4a8c4dbe13b8596a8224c409eda492cf5",
+    "bytes": 1399
+   },
+   "counts": {
+    "links": 56,
+    "nodes": 75,
+    "skeleton_pixels": 265
+   }
+  },
+  "walker/branched03": {
+   "name": "branched03",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "f0e94ec5509191da3b7fb285b3022ef912586d2c0908b3f8cc82979f9beb33b0",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "2357f3d9cc92e9e99ebad8bb602dacbebb3966d5b5c898a05b02276ecb6ab13f",
+    "bytes": 2764
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "df8f8b5cf8e42ed3da081465dadf02fb9afbf17d61abdf0d9e9681cf80c4c295",
+    "bytes": 1206
+   },
+   "counts": {
+    "links": 49,
+    "nodes": 64,
+    "skeleton_pixels": 306
+   }
+  },
+  "walker/branched04": {
+   "name": "branched04",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "dca9631bad281591f0686b4b9e97bca5f5f4d7726e8e636ddd510b5cc1dfdac8",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "c94be0c80ee1a93f0c5b965d29fb40bfa441e3993afbb6a1e02b29c1fe718d9f",
+    "bytes": 2839
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "a346ce7c1001273f75e90e0d1f9796ccf865fecd29d0adc8c13fe5d206bfaed3",
+    "bytes": 1438
+   },
+   "counts": {
+    "links": 57,
+    "nodes": 78,
+    "skeleton_pixels": 295
+   }
+  },
+  "walker/branched05": {
+   "name": "branched05",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "cf5585864039bef58181e602022a3059bb36fcfb795e5fb4f3ee691adeab76e5",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "90497622551ce3ac25977144cbeba25036716c53d974c6f8a6431914369814c7",
+    "bytes": 2739
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "cdf5a7a38995318e3cc75279cf74c17b89fab85d34c3edb25e8b9ede8dba6c09",
+    "bytes": 1234
+   },
+   "counts": {
+    "links": 52,
+    "nodes": 64,
+    "skeleton_pixels": 284
+   }
+  },
+  "walker/branched06": {
+   "name": "branched06",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "5b1902e488c088d832ce7e50fe968c06794716e1f56440dad04c32a65176adfb",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "63c956dc4ab9722a84bf66cb631aa3d37372167662fce47a18a4c59a8e3c9667",
+    "bytes": 2500
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "de164365fa3b39b0ac4a6f8d89cae8b9396a348fa550787ea5140aee31734d01",
+    "bytes": 1146
+   },
+   "counts": {
+    "links": 45,
+    "nodes": 62,
+    "skeleton_pixels": 272
+   }
+  },
+  "walker/branched07": {
+   "name": "branched07",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "90124a2ee1097cf679d1f1388e6de56be7592bd58fe701b5f91a02274ff6625f",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "f1f607342e67c0402b5b2d934c2e8875e92c8294e2a419460421af798770e53a",
+    "bytes": 2750
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "245653899441cde2b7b412a4f347cb706107e156070012aae686100ec41884bd",
+    "bytes": 1293
+   },
+   "counts": {
+    "links": 51,
+    "nodes": 70,
+    "skeleton_pixels": 294
+   }
+  },
+  "walker/branched08": {
+   "name": "branched08",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "cef5d0887b79c6bc84642a0eb0ffb0fec3697b455a441348032cfaa10c5faefb",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "b5dd904b0299c52895e5bd6c2852ad42241d4e42b119263cda41d1c7c7e2724e",
+    "bytes": 2797
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "deecb43002244a89aabd0132357ed3e00eaefed0a2b83e28cd2da49f072b621a",
+    "bytes": 1367
+   },
+   "counts": {
+    "links": 55,
+    "nodes": 74,
+    "skeleton_pixels": 292
+   }
+  },
+  "walker/branched09": {
+   "name": "branched09",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "5ce43817745969c72f52f3927ab5142027a791ee28d8a998251291c9e729111e",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "8771b90a69ff66634fd69e9ab5e85221dfa34c5167e0c41880a1c0eb2674ca30",
+    "bytes": 2515
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "11b60426a7652f438380cf54966aa5552f7aaa42b1700fab915675a807e8b7f5",
+    "bytes": 1305
+   },
+   "counts": {
+    "links": 49,
+    "nodes": 72,
+    "skeleton_pixels": 271
+   }
+  },
+  "walker/branched10": {
+   "name": "branched10",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "2214dfa693310ad0392f710bcfe74eb80c934c91c67a98d11659fbe9f5db16da",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "3d89cd1e6d9719d92c8b99e846fc9137d17e22be0b48c11947ec96caee1f7c1b",
+    "bytes": 2733
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "9eb58740d1ac4eed384e51091c630134371e08ff10dcf7fdc7d6798274e97fe4",
+    "bytes": 1351
+   },
+   "counts": {
+    "links": 54,
+    "nodes": 73,
+    "skeleton_pixels": 280
+   }
+  },
+  "walker/branched11": {
+   "name": "branched11",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "7d93b705cf16d8597c4b27f3b0a81140ba051f203e6b6ac7b668d6843c4d34fb",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "aa93b4e5ee8a40d87f8d6957de23af9633c265e21a527826bda220ffb11bf330",
+    "bytes": 2578
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "ab485237eaebd182318f92044d50e370bc9a6bf79e2199ee1013ac495a237cd4",
+    "bytes": 1284
+   },
+   "counts": {
+    "links": 50,
+    "nodes": 70,
+    "skeleton_pixels": 269
+   }
+  },
+  "walker/branched12": {
+   "name": "branched12",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "634e35e9e5087d93fe07b5c87ffdfde57aa14f35fa66c06aa45d8bccaf9cf352",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "b59204ebb4729e8cce1e28302d01f8be35c245b9341d0aac6bde26f862a6fac3",
+    "bytes": 2294
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "a5aa80dad6b277236972d2dc8badb049a8ddeef342f1821d5566718c317f0b12",
+    "bytes": 1178
+   },
+   "counts": {
+    "links": 43,
+    "nodes": 66,
+    "skeleton_pixels": 256
+   }
+  },
+  "walker/branched13": {
+   "name": "branched13",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "29852348e551947b029a1a956946b1ede312fc93a92ba69325caa2522431def6",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "2de24d52cf31e578a97d052d0452abe2caf8bb1a7c6ae864c27de722b9e95092",
+    "bytes": 2435
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "e37b08360d16f4189f9a433aac7e94296c506c766e8018083e37401bbd4a81ef",
+    "bytes": 1014
+   },
+   "counts": {
+    "links": 38,
+    "nodes": 55,
+    "skeleton_pixels": 282
+   }
+  },
+  "walker/branched14": {
+   "name": "branched14",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "6204d56c6117f29e3c214f898d1be55577da39f68c63c5caea7ea0fbe5dcfe9c",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "12a36a69f67840a66fe8227889acec778a304451ed890434df343e4a4813d51c",
+    "bytes": 2425
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "90972e3bd2a7976121d054cb68cbf63650d147677023dd257d83711dcd13646b",
+    "bytes": 1195
+   },
+   "counts": {
+    "links": 44,
+    "nodes": 66,
+    "skeleton_pixels": 265
+   }
+  },
+  "walker/branched15": {
+   "name": "branched15",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "28c365bf2b1bc4e4a70164e3ebd6c747e9ec7f7f11352c7ec853212c1adc030e",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "501def96d0e8f0af717c021ec2dfb1433a439f473e04615e54feeece9f5c969a",
+    "bytes": 2517
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "f293fd54693efb05aa7092bb7cb449bb59ef2d8bb16b5554df4f8d58eb8ff5a6",
+    "bytes": 1261
+   },
+   "counts": {
+    "links": 47,
+    "nodes": 70,
+    "skeleton_pixels": 271
+   }
+  },
+  "walker/branched16": {
+   "name": "branched16",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "a0b21fecbb9c8b2328432bb0808ab7d430e0bd8835c9b4fe3b695dfb88512efe",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "9cd19fbc70a2b8396b4e0ef50ccff6cbf418891aa0ed16a5e761f8a350d7bd28",
+    "bytes": 2523
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "ac3659aaa87468e68f854a5e12921435aeb0e22e3287150b6a73f3ef77c36384",
+    "bytes": 1158
+   },
+   "counts": {
+    "links": 45,
+    "nodes": 62,
+    "skeleton_pixels": 273
+   }
+  },
+  "walker/branched17": {
+   "name": "branched17",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "36adec4bab65888049f421c8d23c427263a182f45f9cde5dc1ea8955e4f71ece",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "ccfd3cf2b7accd72e11e77369cc128785100baf87d4e96efe14c045aea733187",
+    "bytes": 2561
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "420a72361a5a7fa510a059eded43a4c3cd16cac5a4bdb755910c9c98e38ad6e4",
+    "bytes": 1431
+   },
+   "counts": {
+    "links": 53,
+    "nodes": 80,
+    "skeleton_pixels": 262
+   }
+  },
+  "walker/branched18": {
+   "name": "branched18",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "b212d95af1ab1867b0e8bf2802742bc58e486c94f638d65ad2cbfb7330d63e46",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "4f93685b3bd94ee756a6f2c2664deae0a3cd5a275d46728c7c5f48efd3bab10c",
+    "bytes": 2751
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "62e54550260c1709f7e0b8b3c25a5991fadd2edda2aef35e25b5951854cb2b37",
+    "bytes": 1348
+   },
+   "counts": {
+    "links": 53,
+    "nodes": 73,
+    "skeleton_pixels": 294
+   }
+  },
+  "walker/branched19": {
+   "name": "branched19",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "98298ab4e2687c825577036ef3ad4e5cf9a2710cb24f9dfe3d8b87f4e45234f0",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "d99a5fd739e3128cbf0de173ebd006a0faf56592670f75523d47ef718d39349e",
+    "bytes": 2899
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "acc6679e0ef06fa258b7771e4eb3b44998e876fc3a42a7b063757e0542bac4d2",
+    "bytes": 1287
+   },
+   "counts": {
+    "links": 52,
+    "nodes": 69,
+    "skeleton_pixels": 309
+   }
+  },
+  "walker/branched20": {
+   "name": "branched20",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "0f305a92d27cc3d733d814f0181b939784b8e5a6400ec602c8c6ba2080fdd9bc",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "dd5ce94e3215e005333b4710b21ce2a196f7405c7bc4cf24886b1ae563a38199",
+    "bytes": 2479
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "eaf10e187d6d56a5ade576699abca689a215378d4ab5292aa9bf7e27f691503a",
+    "bytes": 1160
+   },
+   "counts": {
+    "links": 43,
+    "nodes": 64,
+    "skeleton_pixels": 277
+   }
+  },
+  "walker/branched21": {
+   "name": "branched21",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "8b2a1c669f066faffe936310c91c1dc0b8ab3a30c0d7e00be9bd53ef00cbd738",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "7a3286111d255d36987cd2b2e81bcb313cf0a5d4b067c5684bc1192ecd42091e",
+    "bytes": 2392
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "8df4b81118dee65580e50a1613827d58c00a57f3ba848a58f92e94e3abbdab4e",
+    "bytes": 1156
+   },
+   "counts": {
+    "links": 42,
+    "nodes": 64,
+    "skeleton_pixels": 271
+   }
+  },
+  "walker/branched22": {
+   "name": "branched22",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "2c39fde76be13a0973e831aa3a8b425c547593f9b5b758a6627f28730b727ac8",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "d6ee1f9414148718e35465455563760335525f82ce2b06b0d7ad142b32097337",
+    "bytes": 2076
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "c9f4c2112e7254bacf76a37472e7e2403fd2bcd0689e60285329a52a758e2b57",
+    "bytes": 972
+   },
+   "counts": {
+    "links": 33,
+    "nodes": 55,
+    "skeleton_pixels": 249
+   }
+  },
+  "walker/branched23": {
+   "name": "branched23",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "d29e4295b8d57357bfc10487cfbd93f839500715297f264c9380d1c37bb351b7",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "1d97d78b5615b43511b24d72b1064f2c7ecdbd1284a67efa5c7d10ff715c6be4",
+    "bytes": 2847
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "a70c9637ba4d6eb1122d06f4ed3a06174668d69b826d5d64a7632e0d4f11ed68",
+    "bytes": 1289
+   },
+   "counts": {
+    "links": 55,
+    "nodes": 66,
+    "skeleton_pixels": 280
+   }
+  },
+  "walker/branched24": {
+   "name": "branched24",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "b364fdffb3a98deadf20ee0aa79822ab9f27d42136a270fccebd42d18c62f2b3",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "fa2acc3ec50fa8db2b7d194303eb3c47c135bd1c9a777d2c1b45cc608dd97ccd",
+    "bytes": 2530
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "ac50338d03a14e4f2ad8b5d7a7ccae425843ab02d3bc08500b98440550b1df12",
+    "bytes": 1188
+   },
+   "counts": {
+    "links": 46,
+    "nodes": 64,
+    "skeleton_pixels": 283
+   }
+  },
+  "walker/branched25": {
+   "name": "branched25",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "480220d09d2bdffd563adecef1b7d532a9806a25d06ffb87d790f53ba696aae6",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "bdaed6836b7610ec43182c4f75c6495d5e69c09dbb10e0b68b6a42e8cf073f82",
+    "bytes": 2482
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "9e1d37a4c75845651873ca0d27c86a8f3953b56816fec3ad653defce7c28689a",
+    "bytes": 1230
+   },
+   "counts": {
+    "links": 46,
+    "nodes": 68,
+    "skeleton_pixels": 269
+   }
+  },
+  "walker/branched26": {
+   "name": "branched26",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "0537e63f87192c5b92d65c128ac0e5f6466c63355b7f65a0749b6236d640b8fd",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "1bf06c6f1272abf47a7031035f99a5416f7f82524f3d03287b6298871753b45f",
+    "bytes": 2723
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "30964c6da126cd9efb5257bfd7650681a82babc23b6154461cf40bf4e8573a21",
+    "bytes": 1346
+   },
+   "counts": {
+    "links": 52,
+    "nodes": 73,
+    "skeleton_pixels": 283
+   }
+  },
+  "walker/branched27": {
+   "name": "branched27",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "e9064f7e12ca79abfc3d04859baf61c2dd9de96f584079a089dc998eb3f79d19",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "47148dc45190fec55c9ffd6a16d728c762980abc1148b17477cf2b59c52d6df2",
+    "bytes": 2235
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "db752549308c703f034f30dbeff22723fcba733cab90f2d29644ecd7f2c24196",
+    "bytes": 933
+   },
+   "counts": {
+    "links": 34,
+    "nodes": 50,
+    "skeleton_pixels": 269
+   }
+  },
+  "walker/branched28": {
+   "name": "branched28",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "139beed7e5c55be6aa37b535f1c6f1c03e850a36db6575504b3e0f613b9f0914",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "4116fac6b3fcf1113b409b03ca84ffc88de06e6234f4768200450902c4f75d04",
+    "bytes": 2726
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "5bfa3e1401c9f62abb88c78cb4177c27d9771117115e43c331d060ac275ac9dd",
+    "bytes": 1406
+   },
+   "counts": {
+    "links": 53,
+    "nodes": 78,
+    "skeleton_pixels": 286
+   }
+  },
+  "walker/branched29": {
+   "name": "branched29",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     48,
+     64
+    ],
+    "dtype": "bool",
+    "sha256": "e698f485b3f477ac1aedaa779f39ecd96783d4050892b33fc5e598b09400369a",
+    "bytes": 512
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "80e638e4371762f178e5b30c94f61ea192ae280b40f89e7d3c0d091cc7a218d0",
+    "bytes": 2609
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "6de3d994c2a531bbd786b8a370679a1b09ffff6667428df17f84eb04ac715fb4",
+    "bytes": 1261
+   },
+   "counts": {
+    "links": 48,
+    "nodes": 70,
+    "skeleton_pixels": 286
+   }
+  },
+  "walker/isolated_pixel": {
+   "name": "isolated_pixel",
+   "Iskel": {
+    "file": "Iskel.npy",
+    "packing": "packbits_rowmajor",
+    "shape": [
+     31,
+     31
+    ],
+    "dtype": "bool",
+    "sha256": "f7b3767b89215a8506353d1a4a61fcfcd08d15e68336709709c94e56233cfea2",
+    "bytes": 249
+   },
+   "links": {
+    "file": "links.json",
+    "sha256": "2358ddf3d2886b016dff7d1ec117f25e12b91cd4fd9af7269ec4ae6e210bab7f",
+    "bytes": 451
+   },
+   "nodes": {
+    "file": "nodes.json",
+    "sha256": "8a8edb4a0964b8b58e18525d95fd9974f136f6a0e098a64639b2d2a37e157011",
+    "bytes": 181
+   },
+   "counts": {
+    "links": 4,
+    "nodes": 5,
+    "skeleton_pixels": 50
+   }
+  },
+  "widths/synthetic": {
+   "name": "synthetic",
+   "pixlen": 1.0,
+   "Idt": {
+    "file": "Idt.npy.gz",
+    "dtype": "float64",
+    "shape": [
+     600,
+     600
+    ],
+    "sha256": "a7b62a04bd74e495630ecedf83e0ec6692227525f3ba985b5f5c300bfba39ca9",
+    "bytes": 48711,
+    "gzip": true
+   },
+   "links_in": {
+    "file": "links_in.json",
+    "sha256": "d47f67ed76fcc680c262d71597be743a129a6c8c29b0cc70b8788cdeafa367a9",
+    "bytes": 29914
+   },
+   "links_out": {
+    "file": "links_out.json",
+    "sha256": "f3d6737b26108bc1f63685b0783e1c804e3bee0bcf6250b046b08ae66108ccbf",
+    "bytes": 100514
+   }
+  },
+  "widths/colville": {
+   "name": "colville",
+   "pixlen": 30.0,
+   "Idt": {
+    "file": "Idt.npy.gz",
+    "dtype": "float64",
+    "shape": [
+     1540,
+     1540
+    ],
+    "sha256": "06fe5ea1e0b8a88568d471e7c139d45e1a9eb443ad1a5857b492f6aa3449bfa8",
+    "bytes": 963526,
+    "gzip": true
+   },
+   "links_in": {
+    "file": "links_in.json",
+    "sha256": "e9f18f2544f0f34b458721d1aff3792ca51749e7ed9fd6fb1b0085f90cc3e59b",
+    "bytes": 111562
+   },
+   "links_out": {
+    "file": "links_out.json",
+    "sha256": "e810674788289015f994fbc08df7a73584113957a7af0d7019e6ee560eff9f34",
+    "bytes": 320879
+   }
+  },
+  "delta/chain": {
+   "name": "chain",
+   "epsilon": 1e-10,
+   "n": 12,
+   "apex": 0,
+   "outlets": [
+    11
+   ],
+   "nER": 0.0,
+   "A": {
+    "file": "A.npy.gz",
+    "dtype": "float64",
+    "shape": [
+     12,
+     12
+    ],
+    "sha256": "a5dcd0348d97e58cef8ef96aaff03a7d9382aa7598e1b28dd7b7e5ba0409ca15",
+    "bytes": 208,
+    "gzip": true
+   },
+   "expected": {
+    "file": "expected.json",
+    "sha256": "367437f9824f7ad01b265eb37c80046b2938c3724e1acedcd8a7572eadf6ceca",
+    "bytes": 1176
+   }
+  },
+  "delta/fork": {
+   "name": "fork",
+   "epsilon": 1e-10,
+   "n": 31,
+   "apex": 0,
+   "outlets": [
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30
+   ],
+   "nER": 0.7529516210264384,
+   "A": {
+    "file": "A.npy.gz",
+    "dtype": "float64",
+    "shape": [
+     31,
+     31
+    ],
+    "sha256": "5e5f6896ae234b6d85b8eaeed369623b4c98d951aa65f157f1f0e5fbd0b7e436",
+    "bytes": 411,
+    "gzip": true
+   },
+   "expected": {
+    "file": "expected.json",
+    "sha256": "ed03d9cc2e9379adb5f238044942a35809c652fc885910d7d8a1fa1eee25ec3e",
+    "bytes": 10166
+   }
+  },
+  "delta/dag_small": {
+   "name": "dag_small",
+   "epsilon": 1e-10,
+   "n": 24,
+   "apex": 0,
+   "outlets": [
+    23
+   ],
+   "nER": 4.632666222409929e-18,
+   "A": {
+    "file": "A.npy.gz",
+    "dtype": "float64",
+    "shape": [
+     24,
+     24
+    ],
+    "sha256": "6733e67f4332c360375fef9e39841edefe72fa53dd56cc0bb864464b13178f37",
+    "bytes": 535,
+    "gzip": true
+   },
+   "expected": {
+    "file": "expected.json",
+    "sha256": "05f2989cb8607d24d11ced43b94fea51bbd2b8cda2aa5898a6b90b9d9ae9222a",
+    "bytes": 4648
+   }
+  },
+  "delta/dag_medium": {
+   "name": "dag_medium",
+   "epsilon": 1e-10,
+   "n": 60,
+   "apex": 0,
+   "outlets": [
+    59
+   ],
+   "nER": 1.6798931043166687e-17,
+   "A": {
+    "file": "A.npy.gz",
+    "dtype": "float64",
+    "shape": [
+     60,
+     60
+    ],
+    "sha256": "1faea04f71dbcc84db48acb9f7676d1379d17e96a22c98f6a1b84ab1a6ea2732",
+    "bytes": 1449,
+    "gzip": true
+   },
+   "expected": {
+    "file": "expected.json",
+    "sha256": "27a800ba2dc8cad802e99f844b20e5079c0fa1b2f0dfbbb3e327f9a3082a5634",
+    "bytes": 22783
+   }
+  },
+  "delta/dag_large": {
+   "name": "dag_large",
+   "epsilon": 1e-10,
+   "n": 120,
+   "apex": 0,
+   "outlets": [
+    119
+   ],
+   "nER": 7.418139245014744e-17,
+   "A": {
+    "file": "A.npy.gz",
+    "dtype": "float64",
+    "shape": [
+     120,
+     120
+    ],
+    "sha256": "c051e7dc88845a71555550a09204f4527cc548cc24d244d07508bc6e74dbeedc",
+    "bytes": 3570,
+    "gzip": true
+   },
+   "expected": {
+    "file": "expected.json",
+    "sha256": "881d819a050718fd6622e1d2d8aeeeb75ab95b265b1bc7135e8ff79ed56b9e8a",
+    "bytes": 83791
+   }
+  },
+  "delta/dag_bushy": {
+   "name": "dag_bushy",
+   "epsilon": 1e-10,
+   "n": 80,
+   "apex": 0,
+   "outlets": [
+    79
+   ],
+   "nER": 8.193592609852078e-17,
+   "A": {
+    "file": "A.npy.gz",
+    "dtype": "float64",
+    "shape": [
+     80,
+     80
+    ],
+    "sha256": "445cb9c040a83f44d46322d350f7c35540c279006b87c7642143bcf70492bc7e",
+    "bytes": 3409,
+    "gzip": true
+   },
+   "expected": {
+    "file": "expected.json",
+    "sha256": "a035676a384595ea6cbb481e6d96317ca6d55b8edd21e4f8366a6d9bbe16cd71",
+    "bytes": 41847
+   }
+  },
+  "delta/dag_multioutlet_a": {
+   "name": "dag_multioutlet_a",
+   "epsilon": 1e-10,
+   "n": 48,
+   "apex": 0,
+   "outlets": [
+    47
+   ],
+   "nER": 2.0421606045317658e-17,
+   "A": {
+    "file": "A.npy.gz",
+    "dtype": "float64",
+    "shape": [
+     48,
+     48
+    ],
+    "sha256": "b8a91250697cd392f79637182bd2241775588ea2db15afaf9c843f73480892ba",
+    "bytes": 1147,
+    "gzip": true
+   },
+   "expected": {
+    "file": "expected.json",
+    "sha256": "294f3769e5ac6d2c93890b566e46531a425cf8c74b22cdb9d0d2c87625f60e7b",
+    "bytes": 15355
+   }
+  },
+  "delta/dag_multioutlet_b": {
+   "name": "dag_multioutlet_b",
+   "epsilon": 1e-10,
+   "n": 72,
+   "apex": 0,
+   "outlets": [
+    7,
+    16,
+    34,
+    50,
+    71
+   ],
+   "nER": 0.14082993829339382,
+   "A": {
+    "file": "A.npy.gz",
+    "dtype": "float64",
+    "shape": [
+     72,
+     72
+    ],
+    "sha256": "9b497921fac82b1df6f0f9a08e131f97d7c0f7d4b6b11a5240bd662cb15b6b0f",
+    "bytes": 1511,
+    "gzip": true
+   },
+   "expected": {
+    "file": "expected.json",
+    "sha256": "286c83530e81d7b29a14b9f9420ba7cf0c2eb23bd9bdfc3128ff3022e4274ed9",
+    "bytes": 34597
+   }
+  }
+ },
+ "versions": {
+  "python": "3.13.14",
+  "numpy": "2.3.5",
+  "scipy": "1.17.1",
+  "scikit-image": "0.25.2",
+  "networkx": "3.6.1",
+  "rivgraph_path": "/home/user/work/RivGraph",
+  "rivgraph_commit": "661c8cbb3748501a311b51904b1da07891af7340"
+ },
+ "error_cases": {
+  "skel_to_graph_invalid": [
+   {
+    "name": "1d_input",
+    "input": "np.zeros(3)",
+    "error": "ValueError",
+    "message_contains": "two-dimensional binary"
+   },
+   {
+    "name": "nonbinary_values",
+    "input": "np.full((3,3), 2)",
+    "error": "ValueError",
+    "message_contains": "two-dimensional binary"
+   },
+   {
+    "name": "nan_values",
+    "input": "np.full((3,3), np.nan)",
+    "error": "ValueError",
+    "message_contains": "two-dimensional binary"
+   }
+  ],
+  "reference_path": [
+   {
+    "name": "empty00",
+    "input": "np.zeros((0,0),uint8)",
+    "error": "RuntimeError",
+    "message": "Skeleton contains no walkable pixels; cannot resolve graph."
+   },
+   {
+    "name": "small99",
+    "input": "np.zeros((9,9),uint8)",
+    "error": "RuntimeError",
+    "message": "Skeleton contains no walkable pixels; cannot resolve graph."
+   },
+   {
+    "name": "ones11",
+    "input": "np.ones((1,1),uint8)",
+    "error": "KeyError",
+    "message": "'pop from an empty set'"
+   }
+  ],
+  "isolated_pixel_warning": {
+   "logger": "loguru (rivgraph.mask_to_graph)",
+   "message": "Removing 1 isolated skeleton pixels (no neighbors); they cannot form links."
+  }
+ }
+}

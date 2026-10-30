@@ -1,0 +1,54 @@
+name: julia-tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+      - 'release/**'
+  workflow_dispatch:
+
+jobs:
+  julia-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      # The repo Actions policy only permits actions from repositories owned by
+      # jay-kestrel, so checkout and the Julia toolchain are inlined as run
+      # steps (actions/checkout and julia-actions/setup-julia are unavailable).
+      # This fetches refs/heads/<branch> on push and GitHub's pre-merged
+      # refs/pull/<n>/merge on pull_request — the same commits actions/checkout
+      # would provide.
+      - name: Checkout
+        run: |
+          git init "$GITHUB_WORKSPACE"
+          git -C "$GITHUB_WORKSPACE" remote add origin "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git"
+          git -C "$GITHUB_WORKSPACE" fetch --depth=1 origin "${GITHUB_REF}"
+          git -C "$GITHUB_WORKSPACE" checkout --detach FETCH_HEAD
+
+      # No setup-julia action: download the pinned official tarball and verify
+      # its published SHA-256 before extracting. Version and hash pinned to the
+      # toolchain the fixtures and parity runs were validated with.
+      - name: Install Julia
+        run: |
+          JULIA_VERSION=1.13.3
+          JULIA_SHA256=5c61cb4b40332cb5a3504e7779e2f5dac093caa4a1116ded19f01413f85c63e4
+          JULIA_TARBALL="julia-${JULIA_VERSION}-linux-x86_64.tar.gz"
+          JULIA_URL="https://julialang-s3.julialang.org/bin/linux/x64/1.13/${JULIA_TARBALL}"
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/${JULIA_TARBALL}" "$JULIA_URL"
+          echo "${JULIA_SHA256}  ${RUNNER_TEMP}/${JULIA_TARBALL}" | sha256sum --check --strict
+          mkdir -p "$RUNNER_TEMP/julia"
+          tar -xzf "$RUNNER_TEMP/${JULIA_TARBALL}" -C "$RUNNER_TEMP/julia" --strip-components=1
+          echo "$RUNNER_TEMP/julia/bin" >> "$GITHUB_PATH"
+
+      - name: Show Julia version
+        run: |
+          julia --version
+          julia --project=julia -e 'using Pkg; Pkg.status()'
+
+      - name: Run Julia test suite
+        run: |
+          julia --project=julia -e 'using Pkg; Pkg.instantiate(); Pkg.test()'

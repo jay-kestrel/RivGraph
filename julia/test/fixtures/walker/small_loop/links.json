@@ -1,0 +1,1 @@
+{"values": {"idx": [], "conn": [], "id": [], "n_networks": 1}, "types": {"idx": "list", "conn": "list", "id": "OrderedSet", "n_networks": "int"}}

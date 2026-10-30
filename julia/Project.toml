@@ -1,0 +1,32 @@
+name = "RivGraphJulia"
+uuid = "7f1d0e4a-3b2c-4d5e-8f6a-9b0c1d2e3f4a"
+version = "0.1.0"
+authors = ["Obvious <obvious@obvious.ai>"]
+
+[deps]
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+CodecZlib = "944b1d66-785c-5afd-91f1-9de20f533193"
+JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+SHA = "ea8e919c-243c-51af-8825-aaa63cd721ce"
+Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
+
+[compat]
+BenchmarkTools = "1.8.0"
+CodecZlib = "0.7.9"
+JSON = "1.13.4"
+LinearAlgebra = "1.13.0"
+Printf = "1.11.0"
+Random = "1.11.0"
+SHA = "1.0.0"
+Statistics = "1.11.5"
+Test = "1.11.0"
+julia = "1.10"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]

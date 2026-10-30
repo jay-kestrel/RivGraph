@@ -85,6 +85,11 @@ docs/_build/
 .pybuilder/
 target/
 
+# Julia port local artifacts (fixture-dump staging dir from
+# julia/test/fixtures/README.md regeneration flow, and Pkg scratch)
+julia/test/fixtures/generated/
+julia/dev/
+
 # Jupyter Notebook
 .ipynb_checkpoints/
 *_tmp_jupytext_*.ipynb
