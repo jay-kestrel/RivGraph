@@ -32,6 +32,16 @@ BENCH_ROUNDS = 5
 BENCH_WARMUP_ROUNDS = 1
 
 
+def gnucobol_version():
+    """Version string of the compiler that built the COBOL backend."""
+    import subprocess
+
+    out = subprocess.run(["cobc", "--version"], capture_output=True, text=True)
+    if out.returncode != 0:
+        return "unknown"
+    return out.stdout.splitlines()[0].strip()
+
+
 def test_benchmark_skel_to_graph(benchmark, colville_delta):
     """Skeleton->network walker on the full Colville skeleton."""
     benchmark.pedantic(
@@ -78,10 +88,18 @@ def test_benchmark_assign_flow_directions(benchmark, directionality_stage):
     )
 
 
-@pytest.mark.parametrize("backend", ["python", "native"])
+@pytest.mark.parametrize("backend", ["python", "native", "cobol"])
 def test_benchmark_brahmaputra_walker(benchmark, brahmaputra_skeleton, backend, monkeypatch):
     """Paired largest-mask R2 gate: public API, identical skeleton and process."""
-    monkeypatch.setenv("PYDELTARCM_NATIVE", "0" if backend == "python" else "1")
+    if backend == "python":
+        monkeypatch.setenv("PYDELTARCM_NATIVE", "0")
+    elif backend == "cobol":
+        # Port contract C3: the COBOL route preempts the shared Rust var.
+        monkeypatch.delenv("PYDELTARCM_NATIVE", raising=False)
+        monkeypatch.setenv("RIVGRAPH_COBOL", "1")
+        benchmark.extra_info["gnucobol_version"] = gnucobol_version()
+    else:
+        monkeypatch.delenv("PYDELTARCM_NATIVE", raising=False)
     benchmark.extra_info["backend"] = backend
     benchmark.pedantic(
         mask_to_graph.skel_to_graph,
