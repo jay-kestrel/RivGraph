@@ -132,7 +132,15 @@ CRAFTED_CASES = {
 
 
 @pytest.mark.parametrize("kind", sorted(CRAFTED_CASES))
+@pytest.mark.filterwarnings(
+    "ignore:invalid value encountered in scalar divide:RuntimeWarning"
+)
 def test_crafted_edge_cases(kind, monkeypatch):
+    # Upstream reference behavior: a 1-pixel link has zero straight-line
+    # length, so its sinuosity is a 0/0 divide -> NaN (ln_utils.py's stats
+    # section). That warning became an error under master's global
+    # filterwarnings=error; ignoring it here only stops the escalation —
+    # parity still asserts NaN == NaN via equal_nan=True.
     rows, cols = CRAFTED_CASES[kind]
     idt = _strip_idt()
     links = _crafted_links(idt, rows, cols)
