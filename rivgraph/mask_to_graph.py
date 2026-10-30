@@ -13,6 +13,7 @@ from skimage import morphology, measure
 from rivgraph import walk
 import rivgraph.ln_utils as lnu
 import rivgraph.im_utils as imu
+from rivgraph import _cobol as cobol
 from rivgraph.ordered_set import OrderedSet
 
 
@@ -66,6 +67,39 @@ def skel_to_graph(Iskel):
         3. 'conn' - a list of lists containing the link ids connected to this node
 
     """
+
+    # Classify isolated skeleton pixels (components with a single pixel under
+    # 8-connectivity) up front: they have no neighbors to walk and previously
+    # crashed the walkers (KeyError: 'pop from an empty set') or were silently
+    # dropped. Drop them with a warning when a real network remains, and fail
+    # with a descriptive error when they are the only content.
+    skel_arr = np.asarray(Iskel)
+    skel_bool = skel_arr != 0
+    # Only classify two-dimensional skeletons large enough for the 3x3
+    # connectivity structure; degenerate shapes (wrong rank, empty, or 1- to
+    # 2-pixel dimensions) keep their original error behavior from the walker
+    # implementations below
+    if skel_arr.ndim == 2 and skel_arr.size > 0 and min(skel_arr.shape) >= 3:
+        lab, ncomp = nd.label(skel_bool, structure=np.ones((3, 3), dtype=int))
+        if ncomp > 0:
+            comp_sizes = np.bincount(lab.ravel())[1:]  # drop background label 0
+            singleton_labels = np.nonzero(comp_sizes == 1)[0] + 1
+            if singleton_labels.size > 0:
+                if singleton_labels.size == ncomp:
+                    raise ValueError(
+                        'Skeleton contains only isolated pixels (no component '
+                        'with more than one pixel); no network can be walked.')
+                logger.warning('Removing {} isolated skeleton pixels (no '
+                               'neighbors); they cannot form links.'.format(
+                                   singleton_labels.size))
+                skel_bool[np.isin(lab, singleton_labels)] = False
+                Iskel = skel_bool.astype(skel_arr.dtype)
+
+    # RIVGRAPH_COBOL=1 takes precedence over PYDELTARCM_NATIVE (port
+    # contract C3): the COBOL backend is an explicit request and is never
+    # silently overridden by the Rust route.
+    if os.environ.get("RIVGRAPH_COBOL") == "1":
+        return _skel_to_graph_cobol(Iskel)
 
     if os.environ.get("PYDELTARCM_NATIVE") == "0":
         return _skel_to_graph_python(Iskel)
@@ -275,7 +309,7 @@ def _skel_to_graph_python(Iskel):
                         links = lnu.link_updater(links, linkid, noturnidx)
                     # Else, shit. You've found a critical flaw in the algorithm.
                     else:
-                        logger.info('idx: {}, poss_steps: {}'.format(links['idx'][linkidx][-1], poss_steps))
+                        logger.debug('idx: {}, poss_steps: {}'.format(links['idx'][linkidx][-1], poss_steps))
                         raise RuntimeError('Ambiguous which step to take next :( Please raise issue at https://github.com/jonschwenk/RivGraph/issues.')
 
                 elif sum(isbp) == 1:
@@ -302,13 +336,286 @@ def _skel_to_graph_python(Iskel):
 
                         # If we don't have exactly one, shit.
                         if len(isbp_and_fourconn_idx) != 1:
-                            logger.info('idx: {}, poss_steps: {}'.format(links['idx'][linkidx][-1], poss_steps))
+                            logger.debug('idx: {}, poss_steps: {}'.format(links['idx'][linkidx][-1], poss_steps))
                             raise RuntimeError('There is not a unique branchpoint to step to.')
                         else:
                             links = lnu.link_updater(links, linkid, poss_steps[isbp_and_fourconn_idx[0]])
                             links, nodes, links2do = walk.handle_bp(linkid, poss_steps[isbp_and_fourconn_idx[0]], nodes, links, links2do, Iskel)
                             links, nodes, links2do = walk.check_dup_links(linkid, links, nodes, links2do)
                             walking = 0
+
+    # Put the link and node coordinates back into the unpadded
+    links, nodes = lnu.adjust_for_padding(links, nodes, npad, dims, initial_dims)
+
+    # Add indices to nodes--this probably should've been done in network extraction
+    # but since nodes have unique idx it was unnecessary.
+    nodes['id'] = OrderedSet(range(0,len(nodes['idx'])))
+
+    # Remove duplicate links if they exist; for some single-pixel links,
+    # duplicates are formed. Ideally the walking code should ensure that this
+    # doesn't happen, but for now removing duplicates suffices.
+    links, nodes = lnu.remove_duplicate_links(links, nodes)
+
+    return links, nodes
+
+
+def _skel_to_graph_cobol(Iskel):
+    """COBOL walker backend; selected by RIVGRAPH_COBOL=1.
+
+    Initialization, seeding, and every decision point mirror
+    ``_skel_to_graph_python`` exactly; only the inner march is delegated to
+    the COBOL kernel, which stops at decision points so all set-order
+    tie-breaking (branchpoint clustering, first-step selection, emanator
+    ordering) remains Python-side.
+    """
+    # Same input validation as the native route: invalid inputs must raise
+    # the same exception type from every backend.
+    skeleton = np.asarray(Iskel)
+    if skeleton.ndim != 2 or not np.all((skeleton == 0) | (skeleton == 1)):
+        raise ValueError("Skeleton must be a two-dimensional binary array")
+
+    def check_startpoint(spidx, Iskel):
+        """
+        Returns True if a skeleton pixel's first neighbor is not a branchpoint
+        (i.e. the start pixel is valid for a walk), else returns False.
+
+
+        Parameters
+        ----------
+        spidx : int
+            Index within Iskel of the point to check.
+        Iskel : np.array
+            Image of skeletonized mask.
+
+        Returns
+        -------
+        chk_sp : bool
+            True if the startpoint is valid; else False.
+
+        """
+        neighs = walk.walkable_neighbors([spidx], Iskel)
+        isbp = walk.is_bp(neighs.pop(), Iskel)
+
+        if isbp == 0:
+            chk_sp = True
+        else:
+            chk_sp = False
+
+        return chk_sp
+
+    def find_starting_pixels(Iskel):
+        """
+        Finds an endpoint pixel to begin walking to resolve network.
+
+        Parameters
+        ----------
+        Iskel : np.array
+            Image of skeletonized mask.
+
+        Returns
+        -------
+        startpoints : list
+            Possible starting points for the walk.
+
+        """
+        # Get skeleton connectivity
+        eps = imu.skel_endpoints(Iskel)
+        eps = set(np.ravel_multi_index(eps, Iskel.shape))
+
+        # Get one endpoint per connected component in network
+        rp, _ = imu.regionprops(Iskel, ['coords'])
+        startpoints = []
+        for ni in rp['coords']:
+            idcs = set(np.ravel_multi_index((ni[:,0], ni[:,1]), Iskel.shape))
+            # Find a valid endpoint for each connected component network
+            poss_id = idcs.intersection(eps)
+            if len(poss_id) > 0:
+                for pid in poss_id:
+                    if check_startpoint(pid, Iskel) is True:
+                        startpoints.append(pid)
+                        break
+
+        return startpoints
+
+    # Pad the skeleton image to avoid edge problems when walking along skeleton
+    initial_dims = Iskel.shape
+    npad = 20
+    Iskel = np.pad(Iskel, npad, mode='constant', constant_values=0)
+    dims = Iskel.shape
+
+    # Find starting points of all the networks in Iskel
+    startpoints = find_starting_pixels(Iskel)
+
+    # Initialize topology storage vars
+    nodes = dict()
+    nodes['idx'] = OrderedSet([])
+    nodes['conn'] = []
+
+    links = dict()
+    links['idx'] = [[]]
+    links['conn'] = [[]]
+    links['id'] = OrderedSet([])
+
+    # Initialize first links emanating from all starting points.
+    # Some skeletons are fully looped and therefore have no endpoints; in that
+    # case, seed each connected component with an arbitrary non-branchpoint
+    # pixel if available, otherwise the first pixel in the component.
+    if len(startpoints) == 0:
+        rp, _ = imu.regionprops(Iskel, ['coords'])
+        for ni in rp['coords']:
+            idcs = np.ravel_multi_index((ni[:, 0], ni[:, 1]), Iskel.shape)
+            seed = None
+            for pid in idcs:
+                if check_startpoint(pid, Iskel):
+                    seed = pid
+                    break
+            if seed is None and len(idcs) > 0:
+                seed = int(idcs[0])
+            if seed is not None:
+                startpoints.append(seed)
+
+    if len(startpoints) == 0:
+        raise RuntimeError('Skeleton contains no walkable pixels; cannot resolve graph.')
+
+    for i, sp in enumerate(startpoints):
+        links = lnu.link_updater(links, len(links['id']), sp, i)
+        nodes = lnu.node_updater(nodes, sp, i)
+        first_step = walk.walkable_neighbors(links['idx'][i], Iskel)
+        if len(first_step) == 0:
+            # Degenerate one-pixel component: register the endpoint and move on.
+            nodes = lnu.node_updater(nodes, sp, i)
+        else:
+            links = lnu.link_updater(links, i, first_step.pop())
+
+    links['n_networks'] = len(startpoints)
+
+    # Initialize set of links to be resolved
+    links2do = OrderedSet(links['id'])
+
+    # Kernel buffers, shared across this call: the skeleton as contiguous
+    # uint8, a lazily-filled branchpoint-verdict map (255 = unknown), and a
+    # path buffer the kernel may extend. The Python walker refreshes the
+    # path prefix before every kernel call and syncs the result back after.
+    skel_u8 = np.ascontiguousarray(Iskel, dtype=np.uint8)
+    bpmap = np.full(skel_u8.size, 255, dtype=np.uint8)
+    path_buf = np.zeros(skel_u8.size + 8, dtype=np.int64)
+    cant_buf = np.empty(0, dtype=np.int64)
+
+    while links2do:
+
+        linkid = next(iter(links2do))
+        linkidx = links['id'].index(linkid)
+
+        walking = 1
+        cantwalk = walk.cant_walk(links, linkidx, nodes, Iskel)
+        # Membership-only contract: sorted order carries the set's meaning.
+        cant_buf = np.fromiter(sorted(cantwalk), dtype=np.int64,
+                               count=len(cantwalk))
+
+        while walking:
+
+            path_list = links['idx'][linkidx]
+            path_buf[: len(path_list)] = path_list
+            code, pathlen, poss_steps = cobol.march(skel_u8, bpmap,
+                                                    path_buf, len(path_list),
+                                                    cant_buf)
+            path = path_buf[:pathlen].tolist()
+            # The kernel may have extended the path; sync it back.
+            links['idx'][linkidx] = path
+
+            if code == cobol.ENDPOINT: # endpoint reached, update node, link connectivity
+                nodes = lnu.node_updater(nodes, path[-1], linkid)
+                links = lnu.link_updater(links, linkid, conn=nodes['idx'].index(path[-1]))
+                links2do.remove(linkid)
+                break # must break rather than set walking to 0 as we don't want to execute the rest of the code
+
+            if code == cobol.EMANATING: # We have reached an emanating link, so delete the current one we're working on
+                links, nodes = walk.delete_link(linkid, links, nodes)
+                links2do.remove(linkid)
+                walking = 0
+
+            elif code == cobol.BP_REACHED:
+                # The kernel already stepped onto the branchpoint, so the
+                # link holds it; resolve all the branchpoint links.
+                links, nodes, links2do = walk.handle_bp(linkid, path[-1], nodes, links, links2do, Iskel)
+                links, nodes, links2do = walk.check_dup_links(linkid, links, nodes, links2do)
+                walking = 0 # on to next link
+
+            elif code == cobol.JUNCTION: # Check to see if either/both/none are branchpoints
+                isbp = []
+                for n in poss_steps:
+                    if bpmap[n] == 255:
+                        bpmap[n] = walk.is_bp(n, Iskel)
+                    isbp.append(int(bpmap[n]))
+
+                if sum(isbp) == 0:
+
+                    # Compute 4-connected neighbors
+                    isfourconn = []
+                    for ps in  poss_steps:
+                        checkfour = path[-1] - ps
+                        if checkfour in [-1, 1, -dims[1], dims[1]]:
+                            isfourconn.append(1)
+                        else:
+                            isfourconn.append(0)
+
+                    # Compute noturn neighbors
+                    noturn = walk.idcs_no_turnaround(path[-2:], Iskel)
+                    noturnidx = [n for n in noturn if n in poss_steps]
+
+                    # If we can walk to a 4-connected pixel, we will
+                    if sum(isfourconn) == 1:
+                        links = lnu.link_updater(links, linkid, poss_steps[isfourconn.index(1)])
+                    # If we can't walk to a 4-connected, try to walk in a direction that does not turn us around
+                    elif len(noturnidx) == 1:
+                        links = lnu.link_updater(links, linkid, noturnidx)
+                    # Else, shit. You've found a critical flaw in the algorithm.
+                    else:
+                        logger.info('idx: {}, poss_steps: {}'.format(path[-1], poss_steps))
+                        raise RuntimeError('Ambiguous which step to take next :( Please raise issue at https://github.com/jonschwenk/RivGraph/issues.')
+
+                elif sum(isbp) == 1:
+                    # If we've already accounted for this branchpoint, delete the link and halt
+                    links = lnu.link_updater(links, linkid, poss_steps[isbp.index(1)])
+                    links, nodes, links2do = walk.handle_bp(linkid, poss_steps[isbp.index(1)], nodes, links, links2do, Iskel)
+                    links, nodes, links2do = walk.check_dup_links(linkid, links, nodes, links2do)
+                    walking = 0
+
+                elif sum(isbp) > 1:
+                        # In the case where we can walk to more than one branchpoint, choose the
+                        # one that is 4-connected, as this is how we've designed branchpoint
+                        # assignment for complete network resolution.
+                        isfourconn = []
+                        for ps in  poss_steps:
+                            checkfour = path[-1] - ps
+                            if checkfour in [-1, 1, -dims[1], dims[1]]:
+                                isfourconn.append(1)
+                            else:
+                                isfourconn.append(0)
+
+                        # Find poss_step(s) that is both 4-connected and a branchpoint
+                        isbp_and_fourconn_idx = [i for i in range(0,len(isbp)) if isbp[i]==1 and isfourconn[i]==1]
+
+                        # If we don't have exactly one, shit.
+                        if len(isbp_and_fourconn_idx) != 1:
+                            logger.info('idx: {}, poss_steps: {}'.format(path[-1], poss_steps))
+                            raise RuntimeError('There is not a unique branchpoint to step to.')
+                        else:
+                            links = lnu.link_updater(links, linkid, poss_steps[isbp_and_fourconn_idx[0]])
+                            links, nodes, links2do = walk.handle_bp(linkid, poss_steps[isbp_and_fourconn_idx[0]], nodes, links, links2do, Iskel)
+                            links, nodes, links2do = walk.check_dup_links(linkid, links, nodes, links2do)
+                            walking = 0
+
+            elif code == cobol.BP_UNKNOWN:
+                # Single candidate whose branchpoint verdict is unknown:
+                # fill the map entry (reference is_bp semantics) and re-march.
+                n = poss_steps[0]
+                bpmap[n] = walk.is_bp(n, Iskel)
+
+            elif code == cobol.OVERFLOW:
+                # The reference walker would not converge here either; fail
+                # loudly instead of corrupting memory.
+                raise RuntimeError('COBOL walker exceeded the path buffer; the walk is not converging.')
 
     # Put the link and node coordinates back into the unpadded
     links, nodes = lnu.adjust_for_padding(links, nodes, npad, dims, initial_dims)

@@ -9,8 +9,8 @@ Created on Sun Sep 16 15:15:18 2018
 
 @author: Jon
 """
+import json
 import os
-import pickle
 import warnings
 import numpy as np
 import pandas as pd
@@ -36,6 +36,7 @@ from rivgraph.export_schema import (
 )
 from rivgraph.rivers import centerline_utils as cu
 import rivgraph.ln_utils as lnu
+from rivgraph.ordered_set import OrderedSet
 
 
 
@@ -159,8 +160,8 @@ def prepare_paths(path_results, name, path_mask):
     paths['Iskel'] = os.path.join(basepath, name + "_skel.tif")
     # geotiff of distance transform of mask
     paths['Idist'] = os.path.join(basepath, name + "_dist.tif")
-    # links and nodes dictionaries, pickled
-    paths['network_pickle'] = os.path.join(basepath, name + "_network.pkl")
+    # links and nodes dictionaries (JSON; never pickle, which can execute code on load)
+    paths['network_json'] = os.path.join(basepath, name + "_network.json")
     # csv file to manually fix link directionality, must be created by user
     paths['fixlinks_csv'] = os.path.join(basepath, name + "_fixlinks.csv")
     # tif file that shows link directionality
@@ -180,9 +181,68 @@ def prepare_paths(path_results, name, path_mask):
     return paths
 
 
-def pickle_links_and_nodes(links, nodes, path_out):
+def _network_to_jsonable(obj):
     """
-    Saves the links and nodes dictionaries to a pickle file for easy loading.
+    Recursively converts network data structures to JSON-compatible types.
+
+    NumPy arrays and OrderedSets are tagged so the loader can rehydrate them
+    faithfully; plain scalars, strings, lists, tuples, and dicts pass through.
+    The tags are reserved keys: network dicts must not use '__ndarray__' or
+    '__orderedset__' as their sole key.
+    """
+    if isinstance(obj, np.ndarray):
+        return {'__ndarray__': {'dtype': obj.dtype.str, 'data': obj.tolist()}}
+    if isinstance(obj, OrderedSet):
+        return {'__orderedset__': [_network_to_jsonable(v) for v in obj]}
+    if isinstance(obj, np.bool_):
+        return bool(obj)
+    if isinstance(obj, np.integer):
+        return int(obj)
+    if isinstance(obj, np.floating):
+        return float(obj)
+    if isinstance(obj, dict):
+        return {str(k): _network_to_jsonable(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_network_to_jsonable(v) for v in obj]
+    return obj
+
+
+def _network_from_jsonable(obj):
+    """
+    Inverse of _network_to_jsonable: rehydrates tagged containers.
+
+    Only the two known tags are ever rehydrated to their container types, so
+    loading a network file cannot construct arbitrary objects.
+    """
+    if isinstance(obj, dict):
+        if len(obj) == 1 and '__ndarray__' in obj:
+            spec = obj['__ndarray__']
+            return np.asarray(spec['data'], dtype=np.dtype(spec['dtype']))
+        if len(obj) == 1 and '__orderedset__' in obj:
+            return OrderedSet(_network_from_jsonable(v) for v in obj['__orderedset__'])
+        return {k: _network_from_jsonable(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_network_from_jsonable(v) for v in obj]
+    return obj
+
+
+def _refuse_pickle_error(path_in):
+    """Build the guidance error raised for legacy pickle network files."""
+    return ValueError(
+        f"Refusing to load '{path_in}': pickle network files are no longer "
+        "supported because unpickling untrusted files can execute arbitrary "
+        "code. Re-create the network and save it with save_network() to the "
+        "JSON format, then load that file."
+    )
+
+
+def save_links_and_nodes(links, nodes, path_out):
+    """
+    Saves the links and nodes dictionaries to a JSON network file.
+
+    JSON is used instead of pickle because unpickling untrusted files can
+    execute arbitrary code. NumPy arrays and OrderedSets are serialized with
+    type tags and rehydrated on load.
 
     Parameters
     ----------
@@ -191,26 +251,37 @@ def pickle_links_and_nodes(links, nodes, path_out):
     nodes : dict
         Network nodes and associated properties.
     path_out : str
-        Where to save the pickle.
+        Where to save the network file.
 
     Returns
     -------
     None.
 
     """
-    with open(path_out, 'wb') as f:
-        pickle.dump([links, nodes], f)
+    if os.path.splitext(str(path_out))[1].lower() == '.pkl':
+        raise ValueError(
+            f"Refusing to save a network to '{path_out}': pickle network "
+            "files are no longer written because unpickling untrusted files "
+            "can execute arbitrary code. Use a .json path (e.g. "
+            "name_network.json) instead."
+        )
+
+    with open(path_out, 'w', encoding='utf-8') as f:
+        json.dump([_network_to_jsonable(links), _network_to_jsonable(nodes)], f)
 
 
-def unpickle_links_and_nodes(path_pickle):
+def load_links_and_nodes(path_in):
     """
-    Unpickles a previously pickled network. Note that ordered_set is reloaded
-    within this function so that pickle can interpret OrderedSet object fields.
+    Loads a previously saved network file (JSON format).
+
+    Refuses legacy pickle network files without loading them: unpickling
+    untrusted files can execute arbitrary code, so pickle support was
+    removed. Re-create legacy networks and save them with save_network().
 
     Parameters
     ----------
-    path_pickle : str
-        Path to the pickled network.
+    path_in : str
+        Path to the network file.
 
     Returns
     -------
@@ -220,12 +291,38 @@ def unpickle_links_and_nodes(path_pickle):
         Network nodes and associated properties.
 
     """
-    import sys
-    from rivgraph import ordered_set
-    sys.modules['ordered_set'] = ordered_set
+    path_in = str(path_in)
 
-    with open(path_pickle, 'rb') as f:
-        links, nodes = pickle.load(f)
+    if os.path.splitext(path_in)[1].lower() == '.pkl':
+        raise _refuse_pickle_error(path_in)
+
+    with open(path_in, 'rb') as f:
+        raw = f.read()
+
+    # Pickle protocols 2+ start with this opcode byte; a renamed pickle is
+    # refused by content before any parsing.
+    if raw.startswith(b'\x80'):
+        raise _refuse_pickle_error(path_in)
+
+    try:
+        data = json.loads(raw.decode('utf-8'))
+    except (UnicodeDecodeError, json.JSONDecodeError) as err:
+        raise ValueError(
+            f"Network file '{path_in}' could not be parsed as a RivGraph JSON "
+            "network file. If this file is a legacy pickle network, pickle "
+            "support was removed for security reasons (unpickling untrusted "
+            "files can execute arbitrary code): re-create the network and "
+            "save it with save_network()."
+        ) from err
+
+    if not (isinstance(data, list) and len(data) == 2):
+        raise ValueError(
+            f"Network file '{path_in}' is not a RivGraph network file "
+            "(expected a [links, nodes] document)."
+        )
+
+    links = _network_from_jsonable(data[0])
+    nodes = _network_from_jsonable(data[1])
 
     return links, nodes
 
@@ -263,8 +360,9 @@ def _crs_is_epsg_4326(crs):
         axis_dirs = [getattr(axis, 'direction', '').lower() for axis in axis_info]
         if axis_dirs[:2] == ['east', 'north'] and getattr(crs, 'is_geographic', False):
             return True
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug('Could not inspect CRS axis information; treating the CRS '
+                     'as non-geographic. Original error: {}'.format(exc))
 
     return False
 

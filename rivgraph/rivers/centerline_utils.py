@@ -14,6 +14,33 @@ import scipy.interpolate as si
 from scipy import signal
 from scipy.interpolate import interp1d
 
+
+def _intersection_point_coords(int_pts):
+    """
+    Returns an (N, 2) array of the Point coordinates within an intersection
+    result.
+
+    Shapely 2.x geometries are not sized, so indexing a Point, MultiPoint, or
+    GeometryCollection with range(len(...)) raises TypeError. This normalizes
+    every intersection result: bare points, point collections (their Point
+    parts only), and non-point geometries (no cut points -> empty array).
+    """
+    if int_pts.is_empty:
+        return np.empty((0, 2))
+
+    if type(int_pts) is shapely.geometry.point.Point:
+        return np.array([(int_pts.coords.xy[0][0], int_pts.coords.xy[1][0])])
+
+    if hasattr(int_pts, 'geoms'):
+        coords = [(g.coords.xy[0][0], g.coords.xy[1][0])
+                  for g in int_pts.geoms if g.geom_type == 'Point']
+        if coords:
+            return np.array(coords)
+
+    # LineStrings and other non-point geometries carry no intersection points
+    return np.empty((0, 2))
+
+
 def resample_line(xs, ys, npts=None, nknots=None, k=3):
     """
     Resample a line.
@@ -141,8 +168,9 @@ def inflection_pts_oversmooth(xs, ys, n_infs):
 
         smoothwins = np.linspace(start, stop, nbreaks, dtype=int)
 
-        # Window must be greater than polyorder
-        smoothwins[smoothwins < polyorder] = polyorder + 1
+        # Window must be greater than polyorder (a window equal to the
+        # polyorder is rejected by savgol_filter)
+        smoothwins[smoothwins <= polyorder] = polyorder + 1
         # Window must be odd
         smoothwins[smoothwins % 2 == 0] = smoothwins[smoothwins % 2 == 0] + 1
         smoothwins = np.unique(smoothwins)
@@ -166,8 +194,12 @@ def inflection_pts_oversmooth(xs, ys, n_infs):
             intersects = ls.intersection(ls_sm)
             if type(intersects) is shapely.geometry.point.Point:  # Points have no length so check
                 n_ints = 1
-            else:
-                n_ints = len(ls.intersection(ls_sm))
+            elif intersects.is_empty:
+                n_ints = 0
+            elif hasattr(intersects, 'geoms'):  # shapely 2.x collections are not sized
+                n_ints = len([g for g in intersects.geoms if g.geom_type == 'Point'])
+            else:  # line overlap: the curves coincide, no crossing points
+                n_ints = 0
 
             if n_ints < n_infs:
                 break
@@ -188,8 +220,14 @@ def inflection_pts_oversmooth(xs, ys, n_infs):
 
         # obtained and avoid an infinite loop
 
-    # Use the optimized smoothing window to smooth the signal
-    window = post
+    # Use the optimized smoothing window to smooth the signal; the search
+    # loop is skipped for short lines, where post is a float, and windows
+    # must be odd integers greater than polyorder for savgol_filter
+    window = int(post)
+    if window <= polyorder:
+        window = polyorder + 1
+    if window % 2 == 0:
+        window += 1
     xs_sm = signal.savgol_filter(xs, window_length=window, polyorder=polyorder,
                                  mode='interp')
     ys_sm = signal.savgol_filter(ys, window_length=window, polyorder=polyorder,
@@ -201,8 +239,7 @@ def inflection_pts_oversmooth(xs, ys, n_infs):
 
     # Compute intersection points between original and oversmoothed centerline
     int_pts = ls.intersection(ls_sm)
-    int_coords = np.array([(int_pts[i].coords.xy[0][0],
-                            int_pts[i].coords.xy[1][0]) for i in range(len(int_pts))])
+    int_coords = _intersection_point_coords(int_pts)
 
     # Map the intersecting coordinates to the indices of the original signal
     idx = []
@@ -355,7 +392,7 @@ def cl_migration_transect_matching(path_matchers, x1, y1, x2, y2, dt, mig_spacin
             for s in splt:
                 if s.coords.xy[0][0] == origin[0] and s.coords.xy[1][0] == origin[1]:
                     dist = s.length
-                break
+                    break
 
         return dist
 
@@ -372,10 +409,17 @@ def cl_migration_transect_matching(path_matchers, x1, y1, x2, y2, dt, mig_spacin
             return linestring
 
         ssplit = split(linestring, splitter)
+        # shapely 2.x returns multipart results as GeometryCollections, which
+        # are not directly iterable, and single-piece results as the bare
+        # geometry; normalize both to a list of parts
+        if hasattr(ssplit, 'geoms'):
+            parts = list(ssplit.geoms)
+        else:
+            parts = [ssplit]
         split_pt = linestring.intersection(splitter)
 
         splits = []
-        for s in ssplit:
+        for s in parts:
             if Point(s.coords[0]).distance(split_pt) < Point(s.coords[-1]).distance(split_pt):
                 splits.append(LineString(list(split_pt.coords) + list(s.coords)))
             else:

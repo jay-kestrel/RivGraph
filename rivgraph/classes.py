@@ -65,11 +65,6 @@ class rivnetwork:
         verbose : bool, optional
             If True, print run information and warnings to the console, default
             is False.
-        single_thread : bool, optional
-            If the input mask is mostly single-thread, set this to True to 
-            avoid problems in mesh generation later. If True, uses a different
-            mesh generation algorithm that is tailored to single-thread, 
-            meandering channels.
 
 
         Attributes
@@ -192,7 +187,7 @@ class rivnetwork:
         if hasattr(self, 'Iskel') is False:
             self.skeletonize()
 
-        logger.info('Resolving links and nodes...', end='')
+        logger.info('Resolving links and nodes...')
 
         self.links, self.nodes = m2g.skel_to_graph(self.Iskel)
         self.links, self.nodes = lnu.mark_network_ids_provisional(
@@ -212,7 +207,7 @@ class rivnetwork:
             os.path.isfile(self.paths['Idist']) is True:
             self.Idist = rasters.open_raster(self.paths['Idist']).array
         else:
-            logger.info('Computing distance transform...', end='')
+            logger.info('Computing distance transform...')
 
             self.Idist = distance_transform_edt(self.Imask)
 
@@ -368,22 +363,22 @@ class rivnetwork:
 
     def save_network(self, path=None):
         """
-        Writes the link and nodes dictionaries to a .pkl file.
+        Writes the link and nodes dictionaries to a JSON network file.
 
         Parameters
         ----------
         path : str
-            path--including extension--to network .pkl file. If [None], file
-            written to path found in paths['network_pickle']
+            path--including extension--to network file. If [None], file
+            written to path found in paths['network_json']
 
         """
         if path==None and hasattr(self, 'paths') is False:
             logger.info('No save path is available for the network.')
         elif path is None:
-            path = self.paths['network_pickle']
+            path = self.paths['network_json']
             try:
-                io.pickle_links_and_nodes(self.links, self.nodes, path)
-                logger.info('Links and nodes saved to pickle file: {}.'.format(self.paths['network_pickle']))
+                io.save_links_and_nodes(self.links, self.nodes, path)
+                logger.info('Links and nodes saved to network file: {}.'.format(self.paths['network_json']))
             except AttributeError:
                 logger.info('Network has not been computed yet. Use the compute_network() method first.')
 
@@ -399,13 +394,17 @@ class rivnetwork:
 
     def load_network(self, path=None):
         """
-        Loads the link and nodes dictionaries from a .pkl file.
+        Loads the link and nodes dictionaries from a JSON network file.
+
+        Legacy pickle network files are refused without loading them:
+        unpickling untrusted files can execute arbitrary code. Re-create
+        legacy networks and save them with save_network().
 
         Parameters
         ----------
         path : str
-            path--including extension--to network .pkl file. If [None], file
-            is loaded from path found in paths['network_pickle']
+            path--including extension--to network file. If [None], file
+            is loaded from path found in paths['network_json']
         """
 
         if path==None and hasattr(self, 'paths') is False:
@@ -413,12 +412,12 @@ class rivnetwork:
             return
 
         if path is None:
-            path = self.paths['network_pickle']
+            path = self.paths['network_json']
 
         if os.path.isfile(path) is False:
                 logger.info('No file was found at provided path: {}.'.format(path))
         else:
-            self.links, self.nodes = io.unpickle_links_and_nodes(path)
+            self.links, self.nodes = io.load_links_and_nodes(path)
 
 
     def adjacency_matrix(self, weight=None, normalized=False):
@@ -624,8 +623,8 @@ class delta(rivnetwork):
             Points to the channel network mask file path
         results_folder : str, optional
             Specifies a directory where results should be stored
-        verbose : str, optional
-            RivGraph will output processing progress if 'True'. Default is 'False'.
+        verbose : bool, optional
+            RivGraph will output processing progress if True. Default is False.
 
         """
         rivnetwork.__init__(self, name, path_to_mask, results_folder, verbose=verbose)

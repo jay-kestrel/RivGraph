@@ -12,7 +12,6 @@ scikit-image or SciPy that either add additional functionality or provide
 convenience.
 """
 import numpy as np
-from loguru import logger
 from scipy import ndimage as nd
 from skimage import morphology, measure, util
 

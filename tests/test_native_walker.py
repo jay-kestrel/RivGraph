@@ -1,5 +1,6 @@
 """Ordered, exact native/reference parity: no topology canonicalization."""
 
+import os
 from pathlib import Path
 
 import numpy as np
@@ -97,6 +98,11 @@ def test_seeded_branched_masks(seed, monkeypatch):
     )
 
 
+@pytest.mark.skipif(
+    os.environ.get("RIVGRAPH_COBOL") == "1",
+    reason="guard protects the native route; the COBOL route intentionally "
+    "keeps branchpoint checks (walk.is_bp) in Python",
+)
 def test_native_does_not_call_python_walker(monkeypatch):
     from rivgraph import walk
 
@@ -105,6 +111,7 @@ def test_native_does_not_call_python_walker(monkeypatch):
 
     monkeypatch.delenv("PYDELTARCM_NATIVE", raising=False)
     monkeypatch.setattr(mask_to_graph, "_skel_to_graph_python", forbidden)
+    monkeypatch.setattr(mask_to_graph, "_skel_to_graph_cobol", forbidden)
     monkeypatch.setattr(walk, "is_bp", forbidden)
     mask = np.zeros((31, 31), dtype=np.uint8)
     mask[15, 3:28] = mask[3:28, 15] = 1

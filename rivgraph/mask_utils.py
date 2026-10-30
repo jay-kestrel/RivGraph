@@ -27,7 +27,7 @@ import networkx as nx
 
 def _build_island_polygons_rasterio(Ilabeled, gt, connectivity=2):
     """Build island polygons by polygonizing the labeled raster."""
-    affine = Affine.from_gdal(*gt) @ Affine.translation(-1, -1)
+    affine = Affine.from_gdal(*gt) * Affine.translation(-1, -1)
     rio_connectivity = 8 if connectivity == 2 else 4
 
     poly_by_id = {}

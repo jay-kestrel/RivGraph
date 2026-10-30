@@ -7,6 +7,7 @@ on:
   pull_request:
     branches:
       - master
+      - 'release/**'
   workflow_dispatch:
 
 permissions:
@@ -26,29 +27,42 @@ jobs:
     timeout-minutes: 45
 
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
+      # The repo Actions policy only permits actions from repositories owned by
+      # jay-kestrel, so checkout, the Rust toolchain, and the conda environment
+      # are inlined as run steps (actions/checkout, dtolnay/rust-toolchain, and
+      # conda-incubator/setup-miniconda are unavailable). This fetches
+      # refs/heads/<branch> on push and GitHub's pre-merged refs/pull/<n>/merge
+      # on pull_request — the same commits actions/checkout would provide.
+      - name: Checkout
+        run: |
+          git init "$GITHUB_WORKSPACE"
+          git -C "$GITHUB_WORKSPACE" remote add origin "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git"
+          git -C "$GITHUB_WORKSPACE" fetch --depth=1 origin "${GITHUB_REF}"
+          git -C "$GITHUB_WORKSPACE" checkout --detach FETCH_HEAD
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+          cargo --version
 
-      - name: Set up conda environment
-        uses: conda-incubator/setup-miniconda@v3
-        with:
-          miniforge-version: latest
-          activate-environment: rivgraph
-          environment-file: environment.yml
-          auto-activate-base: false
-          use-mamba: true
+      # environment.yml's conda dependencies are installed with pip instead —
+      # conda-incubator/setup-miniconda is unavailable under the repo policy.
+      # The venv goes on GITHUB_PATH so every later step resolves inside it.
+      - name: Set up Python environment
+        run: |
+          python3 --version
+          python3 -m venv "$RUNNER_TEMP/venv"
+          echo "$RUNNER_TEMP/venv/bin" >> "$GITHUB_PATH"
 
       - name: Install RivGraph and docs extras
-        shell: bash -el {0}
         run: |
-          pip install -e . --no-deps
-          pip install ".[docs]"
+          # numpy first: the rust-numpy build resolves its bindings ABI from
+          # the interpreter's numpy before pyproject deps are installed.
+          pip install "numpy>=2,<2.3"
+          pip install -e ".[docs]"
 
       - name: Build docs
-        shell: bash -el {0}
         run: |
           make -C docs html
 
