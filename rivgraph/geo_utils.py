@@ -32,17 +32,21 @@ def get_unit(crs):
         The unit of the provided epsg code.
 
     """
-    # The to_proj4() function generates a warning.
-    warnings.simplefilter(action='ignore', category=UserWarning)
-    p4 = crs.to_proj4()
-    warnings.simplefilter(action='default', category=UserWarning)
+    # The to_proj4() function generates a warning; keep the filter change
+    # local so global warning state is not mutated.
+    with warnings.catch_warnings():
+        warnings.simplefilter(action='ignore', category=UserWarning)
+        p4 = crs.to_proj4()
 
     projkey = p4[p4.index('+proj=') + len('+proj='):].split(' ')[0]
 
     if projkey == 'longlat':
         unit = 'degree'
     else:
-        unitstr = p4[p4.index('+units=') + len('+units='):].split(' ')[0]
+        if '+units=' in p4:
+            unitstr = p4[p4.index('+units=') + len('+units='):].split(' ')[0]
+        else:
+            unitstr = 'm'  # proj4 defaults to metres when +units= is absent
 
         p4units = {'m' : 'meter',
                    'cm' : 'centimeter',
@@ -52,7 +56,9 @@ def get_unit(crs):
                    'km' : 'kilometer',
                    'mi' : 'international statute mile',
                    'mm' : 'millimeter',
-                   'yd' : 'international yard'}
+                   'yd' : 'international yard',
+                   'us-ft' : 'US survey foot',
+                   'ftUS' : 'US survey foot'}
 
         if unitstr in p4units.keys():
             unit = p4units[unitstr]
@@ -86,10 +92,17 @@ def geotiff_vals_from_coords(coords, raster_array, gt):
     # Lat/lon to row/col
     rowcol = coords_to_xy(coords[:, 0], coords[:, 1], gt)
 
-    # Pull value from raster at row/col
+    # Pull value from raster at row/col, refusing out-of-bounds coordinates
+    # (negative indices would silently wrap to the opposite edge).
+    nrows, ncols = raster_array.shape[0], raster_array.shape[1]
     vals = []
     for rc in rowcol:
-        vals.append(raster_array[int(rc[1]), int(rc[0])])
+        row, col = int(rc[1]), int(rc[0])
+        if not (0 <= row < nrows and 0 <= col < ncols):
+            raise IndexError(
+                'Coordinate ({}, {}) maps to pixel (row {}, col {}), outside the '
+                'raster extent of {} rows x {} cols.'.format(rc[0], rc[1], row, col, nrows, ncols))
+        vals.append(raster_array[row, col])
 
     return vals
 

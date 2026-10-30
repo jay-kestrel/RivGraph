@@ -27,7 +27,7 @@ import networkx as nx
 
 def _build_island_polygons_rasterio(Ilabeled, gt, connectivity=2):
     """Build island polygons by polygonizing the labeled raster."""
-    affine = Affine.from_gdal(*gt) * Affine.translation(-1, -1)
+    affine = Affine.from_gdal(*gt) @ Affine.translation(-1, -1)
     rio_connectivity = 8 if connectivity == 2 else 4
 
     poly_by_id = {}
@@ -298,7 +298,12 @@ def surrounding_link_properties(links, nodes, Imask, islands, Iislands,
         #         # Only keep link ids that have 3 or more occurrences
 
         if len(surrounding_nodes) == 0:
-            logger.warning('Cannot find surrounding links for region {}.'.format(idx))
+            # Leave this island's metrics as NaN (the initialized defaults)
+            # rather than falling through to the assert below, which would
+            # abort the entire analysis.
+            logger.warning('Cannot find surrounding links for region {}. '
+                           'Setting its surrounding-link metrics to NaN.'.format(idx))
+            continue
 
         # If multiple loops were found
         if len(surrounding_nodes) > 1:
