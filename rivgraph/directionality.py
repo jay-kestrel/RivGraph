@@ -1126,7 +1126,7 @@ def fix_cycles(links, nodes):
             edges = [links['conn'][links['id'].index(lid)] for lid in subset_links]
             candidates = [subset_links.index(lid) for lid in fliplinks
                           if links['certain_alg'][links['id'].index(lid)] != algmap('manual_set')]
-            selected = graph_queries.first_valid_flip(
+            selected = graph_queries.select_cycle_flip(
                 edges, candidates, dangle_nodes, ins_n, outs_n)
             if selected is None:
                 logger.warning('Unfixable cycle found at links: {}.'.format(cycle_l))

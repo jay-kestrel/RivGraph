@@ -119,3 +119,19 @@ def first_valid_flip(
             if valid:
                 return list(selected)
     return None
+
+
+
+def select_cycle_flip(
+    edges: Sequence[Sequence[int]], candidates: Sequence[int], boundary: set[int],
+    inlets: Sequence[int], outlets: Sequence[int],
+) -> list[int] | None:
+    """Dispatch one whole cycle search; PYDELTARCM_NATIVE=0 is Python-only."""
+    import os
+
+    if os.environ.get("PYDELTARCM_NATIVE") == "0":
+        return first_valid_flip(edges, candidates, boundary, inlets, outlets)
+    from rivgraph import _native
+
+    return _native.first_valid_cycle_flip(
+        [tuple(edge) for edge in edges], candidates, list(boundary), inlets, outlets)

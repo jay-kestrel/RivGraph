@@ -62,23 +62,71 @@ def test_reachable_matches_pairwise_search():
     assert query.reachable(graph, []) == set()
 
 
+@pytest.mark.parametrize("backend", ["0", "1"])
 @pytest.mark.parametrize("manual", [(), (1,), (1, 2, 3, 4, 5)])
-def test_minimum_flip_matches_exhaustive_orientation_oracle(manual):
+def test_minimum_flip_matches_exhaustive_orientation_oracle(manual, backend, monkeypatch):
+    monkeypatch.setenv("PYDELTARCM_NATIVE", backend)
     undirected = [(0, 1), (1, 2), (2, 3), (3, 1), (2, 4), (3, 4), (4, 5)]
     candidates = [i for i in [1, 2, 3, 4, 5] if i not in manual]
     for directions in itertools.product([False, True], repeat=5):
         edges = [edge[::-1] if 0 < i < 6 and directions[i - 1] else edge
                  for i, edge in enumerate(undirected)]
         args = edges, candidates, {0, 5}, [0], [5]
-        assert query.first_valid_flip(*args) == cycle_oracle(*args)
+        assert query.select_cycle_flip(*args) == cycle_oracle(*args)
 
 
 def test_large_cycle_is_skipped_before_search(monkeypatch):
     def unexpected(*args):
         pytest.fail("oversized cycle must be rejected before search")
-    monkeypatch.setattr(query, "first_valid_flip", unexpected)
+    monkeypatch.setattr(query, "select_cycle_flip", unexpected)
     links, nodes = synthetic_delta(30)
     before = [edge[:] for edge in links["conn"]]
     links, _, remaining = di.fix_cycles(links, nodes)
     assert remaining == 1
     assert links["conn"] == before
+
+
+@pytest.mark.parametrize("backend", ["0", "1"])
+@pytest.mark.parametrize("edges,candidates,boundary,inlets,outlets", [
+    ([], [], set(), [], []),
+    ([(0, 0)], [0], {0}, [0], [0]),
+    ([(0, 1), (0, 1)], [0, 1], {0, 1}, [1], [0]),
+    ([(0, 1), (1, 0)], [0, 1], {0, 1}, [0], [1]),
+    ([(0, 1), (1, 2), (3, 4)], [0, 1], {0, 2, 3, 4}, [0, 3], [2, 4]),
+    ([(0, 1), (1, 2), (2, 0)], [2, 1, 0], {0, 1, 2}, [0, 1], [1, 2]),
+    ([(10**12, -4), (-4, 7)], [1, 0], {10**12, 7}, [7], [10**12]),
+])
+def test_degenerate_and_multiterminal_orientations(
+        backend, edges, candidates, boundary, inlets, outlets, monkeypatch):
+    monkeypatch.setenv("PYDELTARCM_NATIVE", backend)
+    args = edges, candidates, boundary, inlets, outlets
+    expected = cycle_oracle(*args)
+    for _ in range(3):
+        assert query.select_cycle_flip(*args) == expected
+
+
+@pytest.mark.parametrize("candidates,boundary,inlets,outlets,message", [
+    ([1], [], [], [], "in range"),
+    ([0, 0], [], [], [], "distinct"),
+    (list(range(11)), [], [], [], "at most ten"),
+    ([], [3], [], [], "absent"),
+    ([], [], [3], [], "absent"),
+    ([], [], [], [3], "absent"),
+])
+def test_native_validates_input(candidates, boundary, inlets, outlets, message):
+    from rivgraph import _native
+
+    with pytest.raises(ValueError, match=message):
+        _native.first_valid_cycle_flip([(0, 1)], candidates, boundary, inlets, outlets)
+
+
+def test_python_switch_does_not_call_native(monkeypatch):
+    from rivgraph import _native
+
+    def unexpected(*args):
+        pytest.fail("Python fallback must not call the extension")
+    monkeypatch.setattr(_native, "first_valid_cycle_flip", unexpected)
+    monkeypatch.setenv("PYDELTARCM_NATIVE", "0")
+    links, nodes = synthetic_delta()
+    _, _, remaining = di.fix_cycles(links, nodes)
+    assert remaining == 0
