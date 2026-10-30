@@ -116,3 +116,49 @@ markers = [
   # runs in the default suite, full runs on demand and in scenarios.yml.
   "slow: long-running full-pipeline scenario runs (deselect with '-m not slow')",
 ]
+
+
+# -----------------------------------------------------------------------
+# Ruff (lint gate added in RV-3)
+#
+# Minimal first gate: the pycodestyle-error and pyflakes rule families,
+# pinned explicitly so a future ruff default change cannot silently widen
+# the gate. The rule set is fully active on new modules and tests; legacy
+# modules are exempted per-file below rather than globally, so a file drops
+# its exemptions as its violations are cleaned up.
+[tool.ruff]
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+
+[tool.ruff.lint.per-file-ignores]
+# Legacy modules: pervasive scientific-Python idioms (single-letter names,
+# `== True` comparisons, occasional unused imports) predate the gate; clean
+# them up incrementally rather than en masse.
+"examples/mouse_brain_example.ipynb" = ["E402", "E741", "F401", "F811"]
+"examples/mouse_brain_example.py" = ["E402", "E741", "F401", "F811"]
+"rivgraph/classes.py" = ["E711"]
+"rivgraph/deltas/delta_directionality.py" = ["E741", "F401"]
+"rivgraph/deltas/delta_metrics.py" = ["E712", "E741"]
+"rivgraph/deltas/delta_utils.py" = ["E741"]
+"rivgraph/directionality.py" = ["E722", "E741"]
+"rivgraph/geo_utils.py" = ["F401"]
+"rivgraph/im_utils.py" = ["E712", "E741"]
+"rivgraph/io_utils.py" = ["E741"]
+"rivgraph/ln_utils.py" = ["E711", "E712", "E721", "E741", "F841"]
+"rivgraph/mask_to_graph.py" = ["E712", "E741"]
+"rivgraph/mask_utils.py" = ["E741"]
+"rivgraph/rasters.py" = ["E741"]
+"rivgraph/rivers/river_directionality.py" = ["E712", "E741", "F401", "F841"]
+"rivgraph/rivers/river_utils.py" = ["E702", "E712", "E721", "E741", "F401"]
+"rivgraph/walk.py" = ["E741"]
+"tests/regression/test_river_regression.py" = ["F401"]
+"tests/test_cli.py" = ["F841"]
+"tests/test_im_utils_regionprops.py" = ["E741"]
+"tests/test_im_utils_skeleton.py" = ["E741"]
+"tests/test_logging_conventions.py" = ["E741"]
+"tests/test_rv1_legacy_crash_fixes.py" = ["E741"]
+"tests/test_rv2_parallel_link_surgery.py" = ["E741"]
+"tests/test_walk.py" = ["E741"]
+

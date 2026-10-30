@@ -1,0 +1,38 @@
+name: lint
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+      - 'release/**'
+  workflow_dispatch:
+
+jobs:
+  ruff:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      # The repo Actions policy only permits actions from repositories owned by
+      # jay-kestrel, so checkout is inlined as a run step (actions/checkout is
+      # unavailable). This fetches refs/heads/<branch> on push and GitHub's
+      # pre-merged refs/pull/<n>/merge on pull_request — the same commits
+      # actions/checkout would provide.
+      - name: Checkout
+        run: |
+          git init "$GITHUB_WORKSPACE"
+          git -C "$GITHUB_WORKSPACE" remote add origin "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git"
+          git -C "$GITHUB_WORKSPACE" fetch --depth=1 origin "${GITHUB_REF}"
+          git -C "$GITHUB_WORKSPACE" checkout --detach FETCH_HEAD
+
+      - name: Install ruff
+        run: |
+          python3 --version
+          # Pinned so lint results are reproducible across runs.
+          pipx install "ruff==0.17.3"
+
+      - name: Run ruff
+        run: ruff check .
