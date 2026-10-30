@@ -29,6 +29,7 @@ Documentation
    native/index
    cli/index
    examples/index
+   scenarios/index
    maskmaking/index
    shoreline/index
    linksnodes/index
