@@ -99,6 +99,12 @@ filterwarnings = [
   # RivGraph's own shapefile-lossiness contract warning. The regression suites
   # exercise shapefile export but assert results, not warning absence.
   "ignore:Exporting to ESRI Shapefile may be lossy:UserWarning",
+  # RivGraph's own informational notice that delta metrics run on an internal
+  # transformed graph (parallel links broken by artificial nodes; the original
+  # network is unchanged). Expected on every delta-metrics call over a network
+  # with parallel links; test_delta_metrics asserts it via pytest.warns, and
+  # the scenario suites assert results, not warning absence.
+  "ignore:Parallel links detected:UserWarning",
   # Known NumPy deprecations inside rivgraph.im_utils (np.in1d and
   # array-to-scalar conversion); cleanup is tracked separately from logging.
   "ignore:`in1d` is deprecated:DeprecationWarning",

@@ -76,13 +76,20 @@ class ScenarioResult:
 
 @dataclass(frozen=True)
 class ScenarioSpec:
-    """A registered scenario: stable CLI name, catalog metadata, function."""
+    """A registered scenario: stable CLI name, catalog metadata, function.
+
+    ``reports_network`` declares whether the scenario extracts a channel
+    network -- network scenarios always report ``n_links``/``n_nodes``/
+    ``total_channel_length_px`` (the record contract); image-stage scenarios
+    (skeletonize/scaling) report their own counts instead.
+    """
 
     name: str
     description: str
     dataset: str
     quick: bool
     fn: Callable[[Path], ScenarioResult]
+    reports_network: bool = True
 
 
 SCENARIOS: dict[str, ScenarioSpec] = {}
@@ -101,7 +108,11 @@ PHASE_THROUGHPUT_UNITS: dict[str, str | None] = {
 
 
 def register_scenario(
-    name: str, description: str, dataset: str, quick: bool = False
+    name: str,
+    description: str,
+    dataset: str,
+    quick: bool = False,
+    reports_network: bool = True,
 ) -> Callable:
     """Register a scenario function under its stable CLI name."""
 
@@ -114,6 +125,7 @@ def register_scenario(
             dataset=dataset,
             quick=quick,
             fn=fn,
+            reports_network=reports_network,
         )
         return fn
 
@@ -260,9 +272,21 @@ class _ScenarioRun:
         return self.context
 
     def __exit__(self, exc_type, exc, tb) -> bool:
-        # A failed phase already finalized the failed record; suppress its
-        # unwind so the scenario function can return the record.
-        return exc_type is not None and issubclass(exc_type, PhaseFailure)
+        if exc_type is None:
+            return False
+        # Mark the failure on the context so the record keeps the phases
+        # that did complete (don't overwrite a phase failure's error text).
+        self.context._status = "failed"
+        if self.context._error is None:
+            self.context._error = f"{type(exc).__name__}: {exc}"
+        if issubclass(exc_type, PhaseFailure):
+            # A failed phase already finalized the failed record; suppress
+            # its unwind so the scenario function can return the record.
+            return True
+        # A body failure (e.g. in record_outputs) still propagates; bridge
+        # the context to run_scenario so the partial record survives.
+        exc.scenario_partial = self.context  # type: ignore[attr-defined]
+        return False
 
 
 def scenario(name: str, dataset: Any, results_dir: Path) -> _ScenarioRun:
@@ -305,8 +329,13 @@ def run_scenario(spec: ScenarioSpec, results_dir: Path) -> ScenarioResult:
     try:
         result = spec.fn(Path(results_dir))
     except Exception as exc:
-        # Failures outside any phase (imports, registry bugs): the record
-        # must still exist so the CLI can continue and report at the end.
+        # Failures outside any phase (imports, registry bugs, scenario-body
+        # errors): the record must still exist so the CLI can continue and
+        # report at the end. Prefer the context's partial record when the
+        # scenario run bridged one -- it keeps the completed phases.
+        partial = getattr(exc, "scenario_partial", None)
+        if isinstance(partial, ScenarioContext):
+            return partial.result
         return _failed_record(spec, f"{type(exc).__name__}: {exc}")
     if not isinstance(result, ScenarioResult):
         return _failed_record(
