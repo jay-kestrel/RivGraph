@@ -22,6 +22,10 @@ summarize upstream history.
 - Backend selection is re-evaluated on every `skel_to_graph` call; a missing or
   broken native extension raises its import error instead of silently falling
   back to the Python reference (#3).
+- logging output normalized: continuity and cycle events log at `warning`,
+  walker traces at `debug`, swallowed exceptions gain `debug` records with
+  exception context, and tests capture output via capsys plus a loguru
+  fixture instead of stdout hand-swaps (#7)
 
 ### Fixed
 
