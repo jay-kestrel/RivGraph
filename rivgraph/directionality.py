@@ -11,7 +11,7 @@ import os
 import math
 import numpy as np
 import networkx as nx
-import itertools
+from rivgraph import _directionality as graph_queries
 import pandas as pd
 from scipy.stats import mode
 from rivgraph import ln_utils as lnu
@@ -621,67 +621,22 @@ def dir_bridges(links, nodes):
     for lc, l in zip(links['conn'], links['len']):
         G.add_edge(lc[0], lc[1], weight=l)
 
-    # Find bridge links; we don't want to count inlet and outlet links
-    preoutlets = []
-    for o in nodes['outlets']:
-        linkconn = links['conn'][links['id'].index(nodes['conn'][nodes['id'].index(o)][0])]
-        othernode = linkconn[:]
-        othernode.remove(o)
-        preoutlets.append(othernode[0])
-
-    bridges = list(nx.bridges(G))
-    bridgenodes = []
     endnodes = set(nodes['outlets']) | set(nodes['inlets'])
-    for b in bridges:
-        bset = set(b) - endnodes
-        if len(bset) == 2:
-            bridgenodes.append(b)
-
-    bridgelinks = []
-    for bn in bridgenodes:
-        conn = nodes['conn'][nodes['id'].index(bn[0])]
-        for c in conn:
-            if bn[1] in links['conn'][links['id'].index(c)]:
-                bridgelinks.append(c)
-                break
-
-    # Guess the bridge link
-    for bl, bn in zip(bridgelinks, bridgenodes):
-        # Remove edge from graph
-        G.remove_edge(bn[0], bn[1])
-        # See which bridgenode connects to upstream node(s) -
-        # Must account for possibility of multiple inlets, so must check both nodes
-        bn0_up, bn0_down, bn1_up, bn1_down = False, False, False, False
-        for o in nodes['outlets']:
-            if nx.has_path(G, bn[0], o) is True:
-                bn0_down = True
-            if nx.has_path(G, bn[1], o) is True:
-                bn1_down = True
-        for i in nodes['inlets']:
-            if nx.has_path(G, bn[0], i) is True:
-                bn0_up = True
-            if nx.has_path(G, bn[1], i) is True:
-                bn1_up = True
-
-        # There are rare cases where the bridge link cannot be set (if both sides of the bridge have an inlet and outlet)
-        # In these cases, do nothing.
-        if bn0_down is True and bn1_up is True and bn0_up is True and bn1_down is True:
-            # Add the edge back to graph
-            G.add_edge(bn[0], bn[1])
-            # Skip
+    link_index = {lid: i for i, lid in enumerate(links['id'])}
+    node_index = {nid: i for i, nid in enumerate(nodes['id'])}
+    for u, v, u_up, u_down, v_up, v_down in graph_queries.bridge_sides(
+            G, set(nodes['inlets']), set(nodes['outlets'])):
+        if u in endnodes or v in endnodes:
             continue
-
-        if bn0_down is False or bn1_up is False:
-            usnode = bn[0]
-        elif bn0_up is False or bn1_down is False:
-            usnode = bn[1]
-
-        blidx = links['id'].index(bl)
+        # Both sides containing both kinds of terminal is deliberately ambiguous.
+        if u_up and u_down and v_up and v_down:
+            continue
+        usnode = u if not u_down or not v_up else v
+        bl = next(lid for lid in nodes['conn'][node_index[u]]
+                  if v in links['conn'][link_index[lid]])
+        blidx = link_index[bl]
         links['guess_alg'][blidx].append(alg)
         links['guess'][blidx].append(usnode)
-
-        # Add the edge back to graph
-        G.add_edge(bn[0], bn[1])
 
     return links, nodes
 
@@ -1136,12 +1091,8 @@ def fix_cycles(links, nodes):
         # Fix all the cycles
         for cycle_n, cycle_l in zip(cfix_nodes, cfix_links):
 
-            # We will try every combination of flow directions and check each
-            # combination for continuity violation and cycles, subsetting possibilities
-            # to only those configurations that don't violate either.
-
-            # First, subset our network to make computations faster; put subset
-            # into networkX graph
+            # Retain the legacy neighborhood and candidate order so ties keep
+            # choosing the same minimum-cardinality repair.
             acl = []
             for nid in cycle_n:
                 acl.extend(nodes['conn'][nodes['id'].index(nid)])
@@ -1150,132 +1101,38 @@ def fix_cycles(links, nodes):
             for lid in all_cycle_links:
                 acn.extend(links['conn'][links['id'].index(lid)])
             all_cycle_nodes = set(acn)
-            G = nx.DiGraph()
-            G.add_nodes_from(all_cycle_nodes)
-            for lid in all_cycle_links:
-                lidx = links['id'].index(lid)
-                lc = links['conn'][lidx]
-                G.add_edge(lc[0], lc[1])
 
             # Determine our "inlet" and "outlet" links/nodes - these we will not flip
             dangle_nodes = all_cycle_nodes - set(cycle_n)
             dangle_links = [l for l in all_cycle_links if len(set(links['conn'][links['id'].index(l)]) - dangle_nodes) == 1]
-            ins_l = []
-            outs_l = []
             ins_n = []
             outs_n = []
-            dns = []
             for dl in dangle_links:
                 lidx = links['id'].index(dl)
                 lconn = links['conn'][lidx]
                 dn = list(set(lconn).intersection(dangle_nodes))[0]
-                dns.append(dn)
                 if dn == lconn[0]:
-                    ins_l.append(dl)
                     ins_n.append(dn)
                 else:
-                    outs_l.append(dl)
                     outs_n.append(dn)
 
-            # Try all configurations of links and count the number of cycles/continuity violations (don't change dangle links)
-            # First, find all combinations
+            # Preserve the legacy cap, but check it before allocating 2**n subsets.
             fliplinks = list(all_cycle_links - set(dangle_links))
-            all_combos = []
-            for L in range(1, len(fliplinks)+1):
-                for subset in itertools.combinations(fliplinks, L):
-                    all_combos.append(subset)
-
-            # If a cycle is too big, there will be too many combinations to
-            # feasibly check all possibilities on a single processor. For now,
-            # we just skip these and report them so they can be manually
-            # corrected.
-            if len(all_combos) > 1024:
+            if len(fliplinks) > 10:
                 logger.warning('The cycle links {} is too large to attempt to fix automatically.'.format(cycle_l))
                 continue
 
-            # Iterate through each combination and determine violations: there are four conditions that must be met:
-            # 1) no cycles,
-            # 2) no sources/sinks
-            # 3) all inlets must be able to drain to an outlet, and all outlets must be reachable from at least one inlet (inlets and outlets refer to those of the subset, not the entire graph)
-            # 4) links cannot flow in opposition to manually set directions
-            cont_violators = []
-            len_cycle = []
-            has_path = []
-            manually_set = []
-            for flink in all_combos:
-
-                # Flip all the links in flink
-                links2flip = []
-                for fl in flink:
-                    links2flip.append(links['conn'][links['id'].index(fl)][:])
-                G = flip_links_in_G(G, links2flip)
-
-                # Check if a cycle exists
-                try:
-                    cycles_temp = nx.find_cycle(G)
-                    len_cycle.append(len(cycles_temp))
-                except:
-                    len_cycle.append(0)
-
-                # Check if continuity is violated
-                sink_nodes = set([node for node, outdegree in list(G.out_degree) if outdegree == 0]) - dangle_nodes
-                source_nodes = set([node for node, indegree in list(G.in_degree) if indegree == 0]) - dangle_nodes
-                cont_violators.append(len(sink_nodes) + len(source_nodes))
-
-                # Check if each inflow can reach an outflow and each outflow is reached by an inflow
-                hp_ins = []
-                for ii in ins_n:
-                    for oo in outs_n:
-                        if nx.has_path(G, ii, oo) is True:
-                            hp_ins.append(1)
-                            break
-                # Flip links to test outlets
-                G = flip_links_in_G(G, links2flip='all')
-                hp_outs = []
-                for oo in outs_n:
-                    for ii in ins_n:
-                        if nx.has_path(G, oo, ii) is True:
-                            hp_outs.append(1)
-                            break
-                # Flip em back
-                G = flip_links_in_G(G, links2flip='all')
-
-                # Assign a "1" where inlet/outlet criteria are met
-                if len(ins_n) == sum(hp_ins) and len(outs_n) == sum(hp_outs):
-                    has_path.append(1)
-                else:
-                    has_path.append(0)
-
-                # Check that we're not flipping any links that have been set manually
-                set_by_alg = []
-                for fl in flink:
-                    set_by_alg.append(links['certain_alg'][links['id'].index(fl)])
-                if algmap('manual_set') in set_by_alg:
-                    manually_set.append(1)
-                else:
-                    manually_set.append(0)
-
-                # Flip links back to original
-                links2flipback = []
-                for fl in flink:
-                    c = links['conn'][links['id'].index(fl)][:]
-                    links2flipback.append([c[1], c[0]])
-                G = flip_links_in_G(G, links2flipback)
-
-            # Find configurations that don't violate continuity and have no cycles
-            poss_configs = [i for i, (nv, nc, hp, ms) in enumerate(zip(cont_violators, len_cycle, has_path, manually_set)) if nv == 0 and nc == 0 and hp == 1 and ms == 0]
-
-            if len(poss_configs) == 0:
+            subset_links = list(all_cycle_links)
+            edges = [links['conn'][links['id'].index(lid)] for lid in subset_links]
+            candidates = [subset_links.index(lid) for lid in fliplinks
+                          if links['certain_alg'][links['id'].index(lid)] != algmap('manual_set')]
+            selected = graph_queries.first_valid_flip(
+                edges, candidates, dangle_nodes, ins_n, outs_n)
+            if selected is None:
                 logger.warning('Unfixable cycle found at links: {}.'.format(cycle_l))
                 continue
-
-            # Choose the configuration that flips the fewest links
-            pc_lens = [len(all_combos[pc]) for pc in poss_configs]
-            links_to_flip = all_combos[poss_configs[pc_lens.index(min(pc_lens))]]
-
-            # Flip the links to fix the cycle
-            for l in links_to_flip:
-                links = lnu.flip_link(links, l)
+            for index in selected:
+                links = lnu.flip_link(links, subset_links[index])
 
     # Check if any cycles remain
     c_nodes, _ = get_cycles(links, nodes)
