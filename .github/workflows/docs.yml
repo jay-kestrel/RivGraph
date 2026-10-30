@@ -16,7 +16,9 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  # Key by ref: the shared "pages" group let any open PR's docs run cancel
+  # every other (including master's own deploy), cascading cancelled checks.
+  group: "pages-${{ github.ref }}"
   cancel-in-progress: true
 
 jobs:
