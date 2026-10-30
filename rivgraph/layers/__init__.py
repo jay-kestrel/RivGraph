@@ -27,14 +27,20 @@ from rivgraph.layers.io import (
     read_multiplex_json,
     write_multiplex_json,
 )
+from rivgraph.layers.lakes import (
+    add_lake_layer,
+    extract_lakes,
+)
 
 __all__ = [
     'EdgeType',
     'LayerType',
     'NodeType',
+    'add_lake_layer',
     'add_landscape_layer',
     'build_multiplex',
     'channel_view',
+    'extract_lakes',
     'multiplex_from_node_link_data',
     'multiplex_to_node_link_data',
     'read_multiplex_json',
