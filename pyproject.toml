@@ -76,6 +76,9 @@ Documentation = "https://veinsoftheearth.github.io/RivGraph/"
 Repository = "https://github.com/VeinsOfTheEarth/RivGraph"
 Issues = "https://github.com/VeinsOfTheEarth/RivGraph/issues"
 
+[project.scripts]
+rivgraph = "rivgraph.cli:main"
+
 [tool.maturin]
 python-source = "."
 module-name = "rivgraph._native"
