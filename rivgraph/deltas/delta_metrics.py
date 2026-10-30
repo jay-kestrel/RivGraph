@@ -481,12 +481,23 @@ def remove_super_apex_from_network(links, nodes):
     # identify connecting links
     super_links = nodes['conn'][nodes['id'].index(super_apex)]
 
-    # delete links first
-    for i in super_links:
+    # delete links first; iterate a copy because delete_link mutates the
+    # connectivity list in place, which would skip remaining links
+    for i in list(super_links):
         links, nodes = lnu.delete_link(links, nodes, i)
 
-    # then delete super apex
-    nodes = lnu.delete_node(nodes, super_apex, warn=True)
+    # then delete super apex if delete_link has not already removed it --
+    # delete_link deletes nodes left with no connections, which is exactly
+    # the super apex once all its links are gone
+    if super_apex in nodes['id']:
+        nodes = lnu.delete_node(nodes, super_apex, warn=True)
+
+    # removal must not leave links pointing at deleted nodes
+    node_ids = set(nodes['id'])
+    for lid, conn in zip(links['id'], links['conn']):
+        if any(n not in node_ids for n in conn):
+            raise ValueError('Link {} references deleted node after '
+                             'super-apex removal.'.format(lid))
 
     return links, nodes
 
@@ -1339,8 +1350,8 @@ def dist_from_apex(nodes, imshape):
         ins_idx = [nodes['idx'][nodes['id'].index(i)] for i in apex_id]
         rs, cs = np.unravel_index(ins_idx, imshape)
         apex_xy = np.mean(rs, dtype=int), np.mean(cs, dtype=int)
-    else:
-        apex_idx = nodes['idx'][nodes['id'].index(apex_id)]
+    else:  # single inlet: apex_id is the inlets list, so index its element
+        apex_idx = nodes['idx'][nodes['id'].index(apex_id[0])]
         apex_xy = np.unravel_index(apex_idx, imshape)
 
     # calculate distances to all nodes from apex location
