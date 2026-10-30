@@ -94,7 +94,7 @@ def neighbors_flat(idx, imflat, ncols, filt='nonzero'):
     if isinstance(idx, np.generic):
         idx = idx.item()
     if isinstance(ncols, np.generic):
-        idx = idx.item()
+        ncols = ncols.item()
 
     dy = ncols
     dx = 1
@@ -993,7 +993,7 @@ def downsample_binary_image(I, newsize, thresh=0.05):
     colfact = newsize[1]/I.shape[1]
 
     # Scale the row,col coordinates and turn them into integers
-    rowcol = np.vstack((np.array(row * rowfact, dtype=np.uint16),np.array(col * colfact, dtype=np.uint16)))
+    rowcol = np.vstack((np.array(row * rowfact, dtype=np.int64),np.array(col * colfact, dtype=np.int64)))
 
     # Get the number of smaller pixels within each larger pixel
     rc_unique, rc_counts = np.unique(rowcol, axis=1, return_counts=True)
@@ -1164,7 +1164,7 @@ def skel_branchpoints(Iskel):
                 e2_neigh = neighbor_vals(Iskel, c[-1, 1], c[-1, 0])
                 e2_sum = e2_neigh[3] + e2_neigh[4] + e2_neigh[5] + e2_neigh[6] + e2_neigh[7]
                 if e2_sum < 2:
-                    Ibps[c[-1, 0], c[-1, 0]] = 0
+                    Ibps[c[-1, 0], c[-1, 1]] = 0
             else:  # First pixel is right-most
                 e1_neigh = neighbor_vals(Iskel, c[0, 1], c[0, 0])
                 e1_sum = e1_neigh[3] + e1_neigh[4] + e1_neigh[5] + e1_neigh[6] + e1_neigh[7]
@@ -1173,7 +1173,7 @@ def skel_branchpoints(Iskel):
                 e2_neigh = neighbor_vals(Iskel, c[-1, 1], c[-1, 0])
                 e2_sum = e2_neigh[3] + e2_neigh[4] + e2_neigh[5] + e2_neigh[6] + e2_neigh[7]
                 if e2_sum < 2:
-                    Ibps[c[-1, 0], c[-1, 0]] = 0
+                    Ibps[c[-1, 0], c[-1, 1]] = 0
             # Check if middle pixels can be removed
             for p in c[1:-1]:
                 pneigh = neighbor_vals(Iskel, p[1], p[0])
@@ -1191,7 +1191,7 @@ def skel_branchpoints(Iskel):
                 e2_neigh = neighbor_vals(Iskel, c[-1,1], c[-1,0])
                 e2_sum = e2_neigh[1] + e2_neigh[2] + e2_neigh[4] + e2_neigh[6] + e2_neigh[7]
                 if e2_sum < 2:
-                    Ibps[c[-1, 0], c[-1, 0]] = 0
+                    Ibps[c[-1, 0], c[-1, 1]] = 0
             else:  # First pixel is right-most
                 e1_neigh = neighbor_vals(Iskel, c[0, 1], c[0, 0])
                 e1_sum = e1_neigh[1] + e1_neigh[2] + e1_neigh[4] + e1_neigh[6] + e1_neigh[7]
@@ -1200,7 +1200,7 @@ def skel_branchpoints(Iskel):
                 e2_neigh = neighbor_vals(Iskel, c[-1, 1], c[-1, 0])
                 e2_sum = e2_neigh[0] + e2_neigh[1] + e2_neigh[3] + e2_neigh[5] + e2_neigh[6]
                 if e2_sum < 2:
-                    Ibps[c[-1, 0], c[-1, 0]] = 0
+                    Ibps[c[-1, 0], c[-1, 1]] = 0
             # Check if middle pixels can be removed
             for p in c[1:-1]:
                 pneigh = neighbor_vals(Iskel, p[1], p[0])
@@ -1383,7 +1383,7 @@ def skel_pixel_curvature(Iskel, nwalk=4):
                     ywalk.append(ywalk[-1])
                     rmdir = {0, 3, 5}
                 elif next(iter(wdir)) == 5:
-                    xwalk.append(xwalk[-1]+1)
+                    xwalk.append(xwalk[-1]-1)
                     ywalk.append(ywalk[-1]+1)
                     rmdir = {2}
                 elif next(iter(wdir)) == 6:
