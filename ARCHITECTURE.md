@@ -117,7 +117,8 @@ optimization, not a parallelism claim. Details and benchmark numbers:
 `rasters.py` centralizes raster opening (`open_raster`, with an explicit
 default-georeferencing fallback for ungeoreferenced inputs), metadata access
 (the `Raster` dataclass), coordinate/affine conversions, and GeoTIFF writing
-(`write_geotiff`). `io_utils.py` handles paths, pickling, and vector I/O.
+(`write_geotiff`). `io_utils.py` handles paths, JSON network persistence, and
+vector I/O.
 
 `export_schema.py` is the export contract: `EXPORT_SCHEMA_VERSION` (`rg-v1`),
 the canonical `RG_LINK_SCHEMA_COLUMNS` / `RG_NODE_SCHEMA_COLUMNS` /
@@ -128,15 +129,17 @@ the canonical `RG_LINK_SCHEMA_COLUMNS` / `RG_NODE_SCHEMA_COLUMNS` /
 recommended vector format; shapefile and GeoJSON remain available with
 format-specific caveats.
 
-**Network pickles.** `io_utils.unpickle_links_and_nodes` (used by
-`rivnetwork.load_network`) loads caller-supplied `.pkl` paths through a
-`RestrictedUnpickler` (#11): its allowlist resolves only the globals network
-pickles legitimately contain — primitive built-in containers, OrderedDict,
-`OrderedSet` (via both module paths), and numpy array/dtype machinery — and
-anything else raises `pickle.UnpicklingError`. Import-based code execution is
-therefore blocked, but network pickles from untrusted sources should still be
-avoided; round-trip and malicious-pickle tests live in
-`tests/test_pickle_security.py`.
+**Network persistence (JSON).** `io_utils.save_links_and_nodes` and
+`load_links_and_nodes` (used by `rivnetwork.save_network` / `load_network`)
+store networks as `*_network.json` files (`paths['network_json']`): plain
+dicts with NumPy arrays and `OrderedSet`s serialized under type tags and
+rehydrated on load from a fixed allowlist of two container tags (#9). Pickle
+is refused on both sides of the boundary — the writer rejects `.pkl` paths,
+and the loader rejects `.pkl` extensions and pickle-magic content before
+parsing — because unpickling untrusted files can execute arbitrary code.
+Legacy pickle network files cannot be loaded; re-create the network and save
+it with `save_network()`. Round-trip and malicious-pickle-refusal tests live
+in `tests/test_network_io.py`.
 
 ## Determinism and reproducibility
 
@@ -175,8 +178,8 @@ This repository is a fork of
 [VeinsOfTheEarth/RivGraph](https://github.com/VeinsOfTheEarth/RivGraph). The
 fork delta over upstream v1.0: the Rust native skeleton walker (PR #3), the
 pytest-benchmark harness (PR #1), core-graph and geo/raster/IO hardening fixes
-(PRs #2, #4, #5), the `rivgraph` CLI (PR #6), and a restricted unpickler for
-network pickles (PR #11). Package metadata
+(PRs #2, #4, #5), the `rivgraph` CLI (PR #6), and safe JSON network
+persistence replacing pickle (PRs #9, #11). Package metadata
 (`pyproject.toml` URLs) and the conda-forge distribution still refer to
 upstream; the GitHub issue tracker is disabled on the fork. Development
 workflow: see [CONTRIBUTING.md](CONTRIBUTING.md).
