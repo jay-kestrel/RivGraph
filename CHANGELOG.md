@@ -28,6 +28,10 @@ summarize upstream history.
 - core graph walk and directionality defects (#4)
 - `im_utils` skeleton curvature walk, branchpoint indexing, and uint16 casts (#2)
 - geo/raster/IO error handling, unit parsing, and downsample registration (#5)
+- network pickle loading goes through a `RestrictedUnpickler` that allowlists
+  only the built-in containers, OrderedDict, OrderedSet, and numpy
+  array/dtype machinery; any other global raises `pickle.UnpicklingError`
+  instead of executing arbitrary code (#11)
 
 ## Version 1.0
 

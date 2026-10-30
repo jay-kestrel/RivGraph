@@ -128,11 +128,15 @@ the canonical `RG_LINK_SCHEMA_COLUMNS` / `RG_NODE_SCHEMA_COLUMNS` /
 recommended vector format; shapefile and GeoJSON remain available with
 format-specific caveats.
 
-**Security caution.** `io_utils.unpickle_links_and_nodes` (used by
-`rivnetwork.load_network`) calls `pickle.load` on caller-supplied `.pkl`
-paths. Loading an untrusted pickle executes arbitrary code — only load network
-files you trust. This is a property of the pickle format, documented here
-rather than changed.
+**Network pickles.** `io_utils.unpickle_links_and_nodes` (used by
+`rivnetwork.load_network`) loads caller-supplied `.pkl` paths through a
+`RestrictedUnpickler` (#11): its allowlist resolves only the globals network
+pickles legitimately contain — primitive built-in containers, OrderedDict,
+`OrderedSet` (via both module paths), and numpy array/dtype machinery — and
+anything else raises `pickle.UnpicklingError`. Import-based code execution is
+therefore blocked, but network pickles from untrusted sources should still be
+avoided; round-trip and malicious-pickle tests live in
+`tests/test_pickle_security.py`.
 
 ## Determinism and reproducibility
 
@@ -171,7 +175,8 @@ This repository is a fork of
 [VeinsOfTheEarth/RivGraph](https://github.com/VeinsOfTheEarth/RivGraph). The
 fork delta over upstream v1.0: the Rust native skeleton walker (PR #3), the
 pytest-benchmark harness (PR #1), core-graph and geo/raster/IO hardening fixes
-(PRs #2, #4, #5), and the `rivgraph` CLI (PR #6). Package metadata
+(PRs #2, #4, #5), the `rivgraph` CLI (PR #6), and a restricted unpickler for
+network pickles (PR #11). Package metadata
 (`pyproject.toml` URLs) and the conda-forge distribution still refer to
 upstream; the GitHub issue tracker is disabled on the fork. Development
 workflow: see [CONTRIBUTING.md](CONTRIBUTING.md).

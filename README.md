@@ -46,7 +46,7 @@ Start with the in-repo [documentation sources](docs/source/index.rst) and the no
 
 ### Fork vs upstream
 
-This repository is a fork of [VeinsOfTheEarth/RivGraph](https://github.com/VeinsOfTheEarth/RivGraph). Beyond the upstream v1.0 codebase, the fork adds the Rust native skeleton walker (PR #3), a pytest-benchmark harness (PR #1), core-graph and geo/raster/IO hardening fixes (PRs #2, #4, #5), and the `rivgraph` CLI (PR #6); the fork history is in the [changelog](CHANGELOG.md). Package metadata (`pyproject.toml` URLs) and the conda-forge distribution still refer to upstream, and the fork publishes no wheels or releases — builds from this repository are source-only.
+This repository is a fork of [VeinsOfTheEarth/RivGraph](https://github.com/VeinsOfTheEarth/RivGraph). Beyond the upstream v1.0 codebase, the fork adds the Rust native skeleton walker (PR #3), a pytest-benchmark harness (PR #1), core-graph and geo/raster/IO hardening fixes (PRs #2, #4, #5), the `rivgraph` CLI (PR #6), and a restricted unpickler for network pickles (PR #11); the fork history is in the [changelog](CHANGELOG.md). Package metadata (`pyproject.toml` URLs) and the conda-forge distribution still refer to upstream, and the fork publishes no wheels or releases — builds from this repository are source-only.
 
 ## Native skeleton walker (fork build)
 
