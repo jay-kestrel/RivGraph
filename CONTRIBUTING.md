@@ -117,10 +117,11 @@ consistent and testable:
 - **Branches:** cut feature branches from `master` and target `master` in PRs.
 - **Backend switches:** any Python-visible behavior change must keep both
   backends passing (see the dual test invocation above).
-- **Security:** `io_utils.unpickle_links_and_nodes` / `load_network` load
-  network pickles through a `RestrictedUnpickler` whose allowlist covers only
-  primitive built-in containers, OrderedDict, OrderedSet, and numpy
-  array/dtype machinery — anything else raises `pickle.UnpicklingError`.
-  Don't add new unpickling entry points or widen the allowlist without
-  corresponding tests (`tests/test_pickle_security.py` covers the round-trip
-  and a malicious pickle).
+- **Security:** network persistence is JSON-only —
+  `io_utils.save_links_and_nodes` / `load_links_and_nodes` (backing
+  `save_network` / `load_network`) serialize plain dicts with type-tagged
+  NumPy arrays and OrderedSets to `*_network.json`, and the loader refuses
+  `.pkl` paths and pickle-magic content before parsing (#9). Unpickling
+  untrusted files can execute arbitrary code, so don't reintroduce pickle
+  entry points (`tests/test_network_io.py` covers the round-trip and the
+  malicious-pickle refusal).
