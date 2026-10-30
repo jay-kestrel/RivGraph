@@ -527,13 +527,14 @@ def _link_widths_native(links, Idt, pixlen):
         float(pixlen))
 
     # max() stays on the Python side so result types match the reference path
-    # exactly (max(pixlen, value) can be the raw int/float pixlen).
+    # exactly; float(pixlen) keeps the values' floating dtype when pixlen
+    # wins (the reference path casts the same way).
     links['wid_pix'] = list(native['wid_pix'])
-    links['len'] = [max(pixlen, v) for v in native['len']]
-    links['wid'] = [max(pixlen, v) for v in native['wid']]
-    links['wid_adj'] = [max(pixlen, v) for v in native['wid_adj']]
+    links['len'] = [max(float(pixlen), v) for v in native['len']]
+    links['wid'] = [max(float(pixlen), v) for v in native['wid']]
+    links['wid_adj'] = [max(float(pixlen), v) for v in native['wid_adj']]
     links['wid_med'] = list(native['wid_med'])
-    links['len_adj'] = [max(pixlen, v) for v in native['len_adj']]
+    links['len_adj'] = [max(float(pixlen), v) for v in native['len_adj']]
     links['sinuosity'] = list(native['sinuosity'])
     return links
 
@@ -680,7 +681,12 @@ def link_widths_and_lengths(links, Idt, pixlen=1):
             st_dist = np.sqrt((xy[0][0]-xy[0][-1])**2 +
                               (xy[1][0]-xy[1][-1])**2) * pixlen
             # sinuosity =  channel len / straight line length
-            links['sinuosity'].append(dists[-1] / st_dist)
+            if st_dist > 0:
+                links['sinuosity'].append(dists[-1] / st_dist)
+            else:
+                # Degenerate (e.g., single-pixel) link: there is no straight-
+                # line direction to deviate from, so define sinuosity as 1.
+                links['sinuosity'].append(1.0)
         else:
             links['wid_adj'].append(np.mean(widths[startidx:endidx]))
             links['wid_med'].append(np.median(widths[startidx:endidx]))
@@ -696,10 +702,11 @@ def link_widths_and_lengths(links, Idt, pixlen=1):
         links['len'].append(dists[-1])
 
         # Ensure the minimum width and length equal to the pixel resolution
-        links['wid'][-1] = max(pixlen, links['wid'][-1])
-        links['len'][-1] = max(pixlen, links['len'][-1])
-        links['wid_adj'][-1] = max(pixlen, links['wid_adj'][-1])
-        links['len_adj'][-1] = max(pixlen, links['len_adj'][-1])
+        # (float() keeps the appended values' floating dtype when pixlen wins)
+        links['wid'][-1] = max(float(pixlen), links['wid'][-1])
+        links['len'][-1] = max(float(pixlen), links['len'][-1])
+        links['wid_adj'][-1] = max(float(pixlen), links['wid_adj'][-1])
+        links['len_adj'][-1] = max(float(pixlen), links['len_adj'][-1])
 
     return links
 
@@ -1447,6 +1454,15 @@ def add_artificial_nodes(links, nodes, imshape, gt):
     # Add the aritifical node to the proper links
     for p in pairs:  # Note that pairs can be triplets etc. as well
 
+        # find_parallel_links can emit overlapping entries for the same node
+        # pair (e.g., a pair and a triplet sharing links), and breaking a link
+        # deletes it, so later entries may reference deleted ids. Restrict
+        # each entry to the links that still exist; fewer than two survivors
+        # means this parallel set was already fully split by an earlier entry.
+        p = [l for l in p if l in links['id']]
+        if len(p) < 2:
+            continue
+
         # Choose the longest link(s) to add the artificial node
         lens = [links['len'][links['id'].index(l)] for l in p]
         minlenidx = np.argmin(lens)
@@ -1489,19 +1505,27 @@ def add_artificial_nodes(links, nodes, imshape, gt):
 
             newlinkids = links['id'][-2:]
             for nl in newlinkids:
-                lconn = links['conn'][links['id'].index(nl)]
-                if us_node in lconn:
-                    if lconn[0] != us_node:
-                        lconn = lconn[::-1]
-                if ds_node in lconn:
-                    if lconn[1] != ds_node:
-                        lconn = lconn[::-1]
+                nlidx = links['id'].index(nl)
+                lconn = links['conn'][nlidx]
+                # Write reversals back--rebinding the local copy alone lets a
+                # flipped link's pieces carry the pixel walk order instead of
+                # the original link's conn orientation.
+                if us_node in lconn and lconn[0] != us_node:
+                    links['conn'][nlidx] = lconn[::-1]
+                if ds_node in links['conn'][nlidx]:
+                    if links['conn'][nlidx][1] != ds_node:
+                        links['conn'][nlidx] = links['conn'][nlidx][::-1]
 
             # Delete the old link
             links, nodes = delete_link(links, nodes, l2b)
 
             # Keep track of the added aritifical nodes
             arts.append(nodes['id'][nodes['idx'].index(idx[halfidx])])
+
+    # Refresh 'parallels' so its entries match the post-split topology;
+    # directionality.set_parallel_links consumes these entries and must not
+    # encounter deleted link ids.
+    links, nodes = find_parallel_links(links, nodes)
 
     # Remove lengths from links
     _ = links.pop('len', None)

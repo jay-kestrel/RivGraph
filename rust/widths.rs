@@ -235,7 +235,13 @@ fn compute_link(dt: &Dt<'_>, pixlen: f64, idx: &[i64]) -> PyResult<LinkWidths> {
         len_adj = dists[n - 1];
         let (dr, dc) = (link_r[0] - link_r[n - 1], link_c[0] - link_c[n - 1]);
         let st_dist = ((dr * dr + dc * dc) as f64).sqrt() * pixlen;
-        sinuosity = dists[n - 1] / st_dist;
+        // Degenerate (e.g., single-pixel) link: no straight-line direction
+        // to deviate from, so define sinuosity as 1 (Python reference parity).
+        sinuosity = if st_dist > 0.0 {
+            dists[n - 1] / st_dist
+        } else {
+            1.0
+        };
     } else {
         let trimmed = &widths[startidx..endidx];
         wid_adj = mean(trimmed);

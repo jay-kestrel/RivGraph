@@ -554,6 +554,11 @@ def links_to_geofile(links, dims, gt, crs, path_export, nodes=None, reproject=Fa
     for link in links['idx']:
         xy = np.unravel_index(link, dims)
         x, y = gu.xy_to_coords(xy[1], xy[0], gt)
+        if len(x) == 1:
+            # Degenerate single-pixel link: GEOS requires at least two
+            # coordinates, so emit a zero-length line.
+            x = np.append(x, x[0])
+            y = np.append(y, y[0])
         all_links.append(LineString(zip(x, y)))
 
     inlet_nodes = set()
@@ -891,14 +896,30 @@ def build_sword_geodataframes(links, nodes, imshape, gt, crs, unit, metadata=Non
             segs['node_len'].append(this_s[seg[1]] - this_s[seg[0]])
             segs['reach_id_R'].append(link_id)
             seg_widths = links['wid_pix'][i][seg[0]:seg[1]]
+            if len(seg_widths) == 0:
+                # Degenerate single-pixel link: the segment spans the whole
+                # link, so aggregate over all of its pixels rather than an
+                # empty slice.
+                seg_widths = links['wid_pix'][i]
             segs['width'].append(np.mean(seg_widths))
             segs['width_var'].append(np.var(seg_widths))
             segs['max_width'].append(np.max(seg_widths))
-            segs['sinuosity'].append(max(0, segs['node_len'][-1] / np.hypot(this_x[seg[1]] - this_x[seg[0]], this_y[seg[1]] - this_y[seg[0]])))
+            seg_span = np.hypot(this_x[seg[1]] - this_x[seg[0]],
+                                this_y[seg[1]] - this_y[seg[0]])
+            if seg_span > 0:
+                segs['sinuosity'].append(
+                    max(0, segs['node_len'][-1] / seg_span))
+            else:
+                segs['sinuosity'].append(1.0)
             segs['fdir_set'].append(link_is_directed)
             segs['rg_flux'].append(link_flux)
 
         # Handle the SWORD reaches
+        if len(this_x) == 1:
+            # Degenerate single-pixel link: GEOS requires at least two
+            # coordinates, so emit a zero-length line.
+            this_x = np.append(this_x, this_x[0])
+            this_y = np.append(this_y, this_y[0])
         reaches['geometry'].append(LineString(zip(this_x, this_y)))
         reaches['reach_id_R'].append(link_id)
         reaches['reach_len'].append(links['len'][i])
