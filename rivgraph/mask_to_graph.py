@@ -67,6 +67,33 @@ def skel_to_graph(Iskel):
 
     """
 
+    # Classify isolated skeleton pixels (components with a single pixel under
+    # 8-connectivity) up front: they have no neighbors to walk and previously
+    # crashed the walkers (KeyError: 'pop from an empty set') or were silently
+    # dropped. Drop them with a warning when a real network remains, and fail
+    # with a descriptive error when they are the only content.
+    skel_arr = np.asarray(Iskel)
+    skel_bool = skel_arr != 0
+    # Only classify two-dimensional skeletons large enough for the 3x3
+    # connectivity structure; degenerate shapes (wrong rank, empty, or 1- to
+    # 2-pixel dimensions) keep their original error behavior from the walker
+    # implementations below
+    if skel_arr.ndim == 2 and skel_arr.size > 0 and min(skel_arr.shape) >= 3:
+        lab, ncomp = nd.label(skel_bool, structure=np.ones((3, 3), dtype=int))
+        if ncomp > 0:
+            comp_sizes = np.bincount(lab.ravel())[1:]  # drop background label 0
+            singleton_labels = np.nonzero(comp_sizes == 1)[0] + 1
+            if singleton_labels.size > 0:
+                if singleton_labels.size == ncomp:
+                    raise ValueError(
+                        'Skeleton contains only isolated pixels (no component '
+                        'with more than one pixel); no network can be walked.')
+                logger.warning('Removing {} isolated skeleton pixels (no '
+                               'neighbors); they cannot form links.'.format(
+                                   singleton_labels.size))
+                skel_bool[np.isin(lab, singleton_labels)] = False
+                Iskel = skel_bool.astype(skel_arr.dtype)
+
     if os.environ.get("PYDELTARCM_NATIVE") == "0":
         return _skel_to_graph_python(Iskel)
 
