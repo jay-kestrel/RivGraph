@@ -64,6 +64,10 @@ notebooks = [
 test = [
   "pytest>=8,<9",
 ]
+bench = [
+  "pytest>=8,<9",
+  "pytest-benchmark>=4,<6",
+]
 
 [project.urls]
 Homepage = "https://veinsoftheearth.github.io/RivGraph/"
