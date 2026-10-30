@@ -10,14 +10,15 @@ on:
       - 'release/**'
   workflow_dispatch:
 
+# Pages deploy scaffolding was removed: the org Actions policy rejects every
+# actions/* reference at job setup — even references inside steps whose `if:`
+# guards are false (observed on run 41114548646, where fork-guarded
+# configure-pages@v5 and upload-pages-artifact@v4 were named in the rejection).
+# The Pages actions are not owned by jay-kestrel, so Pages deploys can never
+# run in this repository. Restore them only if jay-kestrel-owned forks of the
+# Pages actions are provisioned and allowlisted.
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
 
 jobs:
   build-docs:
@@ -64,25 +65,7 @@ jobs:
         run: |
           make -C docs html
 
-      - name: Configure GitHub Pages
-        if: github.repository == 'VeinsOfTheEarth/RivGraph' && github.event_name == 'push' && github.ref == 'refs/heads/master'
-        uses: actions/configure-pages@v5
-
-      - name: Upload GitHub Pages artifact
-        if: github.repository == 'VeinsOfTheEarth/RivGraph' && github.event_name == 'push' && github.ref == 'refs/heads/master'
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: docs/build/html
-
-  deploy:
-    if: github.repository == 'VeinsOfTheEarth/RivGraph' && github.event_name == 'push' && github.ref == 'refs/heads/master'
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build-docs
-
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      # No Pages steps here (see note at permissions): configure-pages,
+      # upload-pages-artifact, and deploy-pages are org-policy-rejected at job
+      # setup even when fork-guarded, so the deploy job was removed with them.
+      # Docs artifacts are validated by the build-docs job itself.
