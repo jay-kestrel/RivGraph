@@ -6,6 +6,7 @@ mod branchpoints;
 mod graph;
 mod image;
 mod sets;
+mod widths;
 
 use numpy::{PyReadonlyArray2, PyUntypedArrayMethods};
 use pyo3::{exceptions::PyValueError, prelude::*, types::PyDict};
@@ -41,5 +42,7 @@ fn skel_to_graph<'py>(
 #[pymodule]
 fn _native(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(skel_to_graph, m)?)?;
+    m.add_function(wrap_pyfunction!(widths::scan_mask, m)?)?;
+    m.add_function(wrap_pyfunction!(widths::link_widths_and_lengths, m)?)?;
     Ok(())
 }
