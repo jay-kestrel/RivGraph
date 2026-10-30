@@ -636,7 +636,12 @@ def link_widths_and_lengths(links, Idt, pixlen=1):
             st_dist = np.sqrt((xy[0][0]-xy[0][-1])**2 +
                               (xy[1][0]-xy[1][-1])**2) * pixlen
             # sinuosity =  channel len / straight line length
-            links['sinuosity'].append(dists[-1] / st_dist)
+            if st_dist > 0:
+                links['sinuosity'].append(dists[-1] / st_dist)
+            else:
+                # Degenerate (e.g., single-pixel) link: there is no straight-
+                # line direction to deviate from, so define sinuosity as 1.
+                links['sinuosity'].append(1.0)
         else:
             links['wid_adj'].append(np.mean(widths[startidx:endidx]))
             links['wid_med'].append(np.median(widths[startidx:endidx]))
@@ -652,10 +657,11 @@ def link_widths_and_lengths(links, Idt, pixlen=1):
         links['len'].append(dists[-1])
 
         # Ensure the minimum width and length equal to the pixel resolution
-        links['wid'][-1] = max(pixlen, links['wid'][-1])
-        links['len'][-1] = max(pixlen, links['len'][-1])
-        links['wid_adj'][-1] = max(pixlen, links['wid_adj'][-1])
-        links['len_adj'][-1] = max(pixlen, links['len_adj'][-1])
+        # (float() keeps the appended values' floating dtype when pixlen wins)
+        links['wid'][-1] = max(float(pixlen), links['wid'][-1])
+        links['len'][-1] = max(float(pixlen), links['len'][-1])
+        links['wid_adj'][-1] = max(float(pixlen), links['wid_adj'][-1])
+        links['len_adj'][-1] = max(float(pixlen), links['len_adj'][-1])
 
     return links
 

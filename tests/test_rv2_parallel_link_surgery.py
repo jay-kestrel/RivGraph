@@ -268,7 +268,7 @@ def test_mixed_links_shapes_and_dtypes_preserved(strip_idt):
     for key in attribute_keys:
         assert len(out[key]) == len(out['id']), key
 
-    for key in ('wid', 'wid_adj', 'wid_med', 'len_adj', 'sinuosity'):
+    for key in ('len', 'wid', 'wid_adj', 'wid_med', 'len_adj', 'sinuosity'):
         values = out[key]
         assert all(np.isfinite(v) for v in values), key
         assert all(isinstance(v, (float, np.floating)) for v in values), key
@@ -308,7 +308,9 @@ def test_sword_export_handles_one_pixel_links(strip_idt):
 
     crs = CRS.from_epsg(32615)
     with warnings.catch_warnings():
-        warnings.simplefilter('error')  # no NaN RuntimeWarnings may escape
+        # NaN aggregation must not escape as RuntimeWarnings; third-party
+        # warnings (e.g., pyproj internals) are not this test's subject.
+        warnings.simplefilter('error', RuntimeWarning)
         sword_nodes, sword_reaches = iou.build_sword_geodataframes(
             links, nodes, IMSHAPE, GT, crs, 'meter')
 
