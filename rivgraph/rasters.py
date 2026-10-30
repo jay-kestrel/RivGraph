@@ -310,6 +310,8 @@ def crop_geotiff(tif, cropto='first_nonzero', npad=0, outpath=None):
         raise NotImplementedError('Only cropto="first_nonzero" is supported.')
 
     idcs = np.where(tiffull > 0)
+    if idcs[0].size == 0:
+        raise ValueError('no pixels to crop: the raster is empty (all-zero mask).')
     t = np.min(idcs[0])
     b = np.max(idcs[0]) + 1
     l = np.min(idcs[1])
@@ -338,16 +340,15 @@ def downsample_binary_geotiff(input_file, ds_factor, output_name, thresh=None):
     src = open_raster(input_file)
     gt = src.gt
     img = src.array.astype(np.int32)
-    img_x, img_y = np.shape(img)
-    modfactor = 1 / ds_factor
-    if (img_x % modfactor > 0) or (img_y % modfactor > 0):
-        img_x += img_x % modfactor
-        img_y += img_y % modfactor
     old_x, old_y = np.shape(img)
-    npad = int(np.max([(img_x - old_x), (img_y - old_y)]))
 
-    newimg = np.pad(img, npad, mode='constant')
-    newgt = (gt[0] - npad * gt[1], gt[1], gt[2], gt[3] - npad * gt[5], gt[4], gt[5])
+    # Pad each dimension (at its end) up to a multiple of 1/ds_factor so every
+    # output cell spans exactly the same number of input cells.
+    modfactor = 1 / ds_factor
+    pad_x = int((modfactor - old_x % modfactor) % modfactor)
+    pad_y = int((modfactor - old_y % modfactor) % modfactor)
+    newimg = np.pad(img, ((0, pad_x), (0, pad_y)), mode='constant')
+    img_x, img_y = np.shape(newimg)
 
     rs_x = int(img_x * ds_factor)
     rs_y = int(img_y * ds_factor)
@@ -356,6 +357,9 @@ def downsample_binary_geotiff(input_file, ds_factor, output_name, thresh=None):
     else:
         img_rs = im.downsample_binary_image(newimg, (rs_x, rs_y), thresh)
 
-    dest_gt = (newgt[0], (newgt[1] * img_x) / rs_x, newgt[2], newgt[3], newgt[4], (newgt[5] * img_y) / rs_y)
+    # Cell sizes follow the true padded-shape shrink per axis (x spans
+    # columns, y spans rows); the origin is unchanged because padding only
+    # appends pixels.
+    dest_gt = (gt[0], gt[1] * img_y / rs_y, gt[2], gt[3], gt[4], gt[5] * img_x / rs_x)
     write_geotiff(img_rs, dest_gt, src.wkt, output_name, dtype='uint8')
     return str(output_name)

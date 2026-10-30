@@ -17,6 +17,8 @@ import pandas as pd
 import geopandas as gpd
 from shapely.geometry import Point, LineString
 
+from loguru import logger
+
 import rivgraph.geo_utils as gu
 import rivgraph.rasters as rasters
 from rivgraph.export_schema import (
@@ -718,7 +720,10 @@ def build_sword_geodataframes(links, nodes, imshape, gt, crs, unit, metadata=Non
     """
     _warn_if_network_ids_not_finalized(links=links, nodes=nodes)
     if unit != 'meter':
-        raise TypeError('Reproject your mask to a meters-based CRS for SWORD exports. Or raise an issue for RivGraph to handle more unit types.')
+        logger.warning(
+            "Unsupported unit '{}' for SWORD export: expected 'meter'. Length and "
+            'width attributes will be exported in their native units; reproject '
+            'your mask to a meters-based CRS for canonical SWORD output.'.format(unit))
 
     metadata = {} if metadata is None else dict(metadata)
     node_spacing = 200  # meters, a SWORD default
@@ -740,6 +745,12 @@ def build_sword_geodataframes(links, nodes, imshape, gt, crs, unit, metadata=Non
     link_id_to_index = {lid: i for i, lid in enumerate(links['id'])}
     flow_dirs_available = 'certain' in links and len(links['certain']) == len(links['id'])
     flux_attr = _resolve_sword_flux_attr(links, flux_attr=flux_attr)
+
+    # pyproj can transform directly from a CRS object; only use the integer
+    # EPSG code when one exists (to_epsg() is None for WKT/proj4-defined CRSs).
+    src_crs = crs.to_epsg()
+    if src_crs is None:
+        src_crs = crs
 
     # Make nodes for each link that are at least node_spacing apart
     # SWORD calls these nodes, but RG uses nodes for something different so here we call them segs/segments
@@ -775,7 +786,7 @@ def build_sword_geodataframes(links, nodes, imshape, gt, crs, unit, metadata=Non
         for seg in segments:
             seg_idx = int(sum(seg)/2)
             segs['geometry'].append(Point(this_x[seg_idx], this_y[seg_idx]))
-            lon, lat = gu.transform_coords(this_x[seg_idx], this_y[seg_idx], crs.to_epsg(), 4326)
+            lon, lat = gu.transform_coords(this_x[seg_idx], this_y[seg_idx], src_crs, 4326)
             segs['x'].append(lon)
             segs['y'].append(lat)
             segs['node_id_rg'].append(this_idx[seg_idx])
@@ -802,7 +813,7 @@ def build_sword_geodataframes(links, nodes, imshape, gt, crs, unit, metadata=Non
         # Must be in WGS84 (EPSG:4326)
         line = reaches['geometry'][-1]
         midpoint = line.interpolate(0.5 * line.length)
-        lon, lat = gu.transform_coords(midpoint.x, midpoint.y, crs.to_epsg(), 4326)
+        lon, lat = gu.transform_coords(midpoint.x, midpoint.y, src_crs, 4326)
         reaches['x'].append(lon)
         reaches['y'].append(lat)
 
