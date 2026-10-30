@@ -202,6 +202,10 @@ def clip_by_shoreline(links, nodes, shoreline_shp, imshape, gt, wkt):
 
         # Intersection coordinates
         int_points = links_gdf['geometry'][list(links_gdf['id'].values).index(clid)].intersection(shore_gdf['geometry'][0])
+        # Cut indices start unset so they can never carry stale values over
+        # from a previous link
+        min_idx = None
+        max_idx = None
         if int_points.geom_type == 'Point':
             dists = np.sqrt((coords[0] - int_points.xy[0][0])**2 + (coords[1] - int_points.xy[1][0])**2)
             min_idx = np.argmin(dists)
@@ -214,6 +218,24 @@ def clip_by_shoreline(links, nodes, shoreline_shp, imshape, gt, wkt):
                 cutidcs.append(np.argmin(dists))
             min_idx = min(cutidcs)
             max_idx = max(cutidcs)
+        elif int_points.geom_type == 'GeometryCollection':  # mixed point/line intersections: cut at the point parts
+            cutidcs = []
+            for pt in int_points.geoms:
+                if pt.geom_type != 'Point':
+                    continue
+                dists = np.sqrt((coords[0] - pt.xy[0][0])**2 + (coords[1] - pt.xy[1][0])**2)
+                cutidcs.append(np.argmin(dists))
+            if cutidcs:
+                min_idx = min(cutidcs)
+                max_idx = max(cutidcs)
+
+        if min_idx is None:
+            # LineString overlaps and other geometries carry no cut point;
+            # failing loudly beats clipping at a stale or unbound index
+            raise RuntimeError(
+                'Unexpected intersection geometry {} between link {} and the '
+                'shoreline; cannot determine a cut point.'.format(
+                    int_points.geom_type, clid))
 
         # Delete the intersected link and add two new links corresponding to the
         # two parts of the (now broken) intersected link
@@ -236,7 +258,7 @@ def clip_by_shoreline(links, nodes, shoreline_shp, imshape, gt, wkt):
                 else:
                     newlink_idcs = idcs[max_idx + 1:]
             else:
-                RuntimeError('Check link-breaking.')
+                raise RuntimeError('Check link-breaking.')
 
             # Only add new link if it contains indices
             if len(newlink_idcs) > 0:
