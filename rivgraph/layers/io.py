@@ -104,7 +104,13 @@ def multiplex_to_node_link_data(multiplex):
         invalid graph must not serialize into a file consumers trust.
     """
     validate_multiplex(multiplex)
-    return nx.node_link_data(multiplex)
+    doc = nx.node_link_data(multiplex)
+    if 'links' in doc and 'edges' not in doc:
+        # networkx keys the edge list 'links' in all pinned versions; the
+        # multiplex JSON contract (and its consumers) document it as 'edges'.
+        doc = dict(doc)
+        doc['edges'] = doc.pop('links')
+    return doc
 
 
 def multiplex_from_node_link_data(data):
@@ -128,8 +134,14 @@ def multiplex_from_node_link_data(data):
         multigraph, lacks the multiplex marker, or breaks the multiplex
         attribute contract.
     """
+    doc = data
+    if 'links' not in doc and 'edges' in doc:
+        # Documents written with the multiplex 'edges' contract are read
+        # through a normalized copy; networkx (pinned versions) looks the
+        # edge list up under 'links'. The caller's dict is never mutated.
+        doc = dict(doc, links=doc['edges'])
     try:
-        G = nx.node_link_graph(data)
+        G = nx.node_link_graph(doc)
     except Exception as exc:
         raise ValueError(
             f'Data is not a node-link document networkx can read: '
