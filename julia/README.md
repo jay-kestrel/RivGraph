@@ -53,18 +53,15 @@ julia --project=julia julia/bench/benchmarks.jl
 
 ## Known divergences (documented)
 
-- **Isolated-pixel pre-guard not ported.** Upstream `skel_to_graph`
-  (added after the port baseline) classifies 8-connected singleton components
-  before dispatch: it drops them with a warning when a real network remains
-  and raises when the skeleton is only singletons. The Julia entry point
-  assumes a walkable skeleton (the committed fixtures contain no singleton
-  components, and the parity contract is defined on them). Replicating the
-  guard is a follow-up if the Julia path is ever wired as a live backend.
 - **Scope-level, not kernel-level:** skeletonization, image I/O, and flow
   directionality remain Python-only (see Scope). Directionality additionally
   fails at the current Python HEAD through `bridge_sides`
   (`KeyError` on the NetworkX dominator map's missing super-root entry) —
   pre-existing, unrelated to this port.
+- The upstream isolated-pixel pre-guard (drop-with-warning / raise when only
+  singletons) IS ported, including its warning text semantics
+  (`classify_isolated_pixels` in `mask_to_graph.jl`), and exercised by the
+  real-skeleton fixtures.
 
 ## Fixtures
 
