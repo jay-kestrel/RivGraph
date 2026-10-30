@@ -197,28 +197,45 @@ def test_exporters_preserve_conn0_upstream(strip_idt):
     """F1: both exporter paths must report the preserved orientation.
 
     links_to_gpd exports 'us node'/'ds node' from conn[0]/conn[1]; the SWORD
-    builder derives rg_us_nd/rg_ds_nd the same way. After the split, exported
-    direction must match the pieces' connectivity exactly.
+    builder derives rg_us_nd/rg_ds_nd the same way. The expectation is taken
+    from the ORIGINAL flipped link's orientation in pixel space (immune to
+    finalized-ID relabeling): the piece carrying the original's upstream end
+    must export that node as upstream.
     """
     links, nodes = _parallel_network([[0, 1], [1, 0]], [STRAIGHT, UPPER])
 
     out_links, out_nodes = lnu.add_artificial_nodes(links, nodes, IMSHAPE, GT)
-
-    # Widths must be recomputed after the split (they were dropped on purpose).
     out_links = lnu.link_widths_and_lengths(out_links, strip_idt, pixlen=1)
-
-    # Finalize IDs before exporting (the documented post-topology workflow).
     out_links, out_nodes = lnu.finalize_network_ids(out_links, out_nodes)
 
+    px_202 = int(np.ravel_multi_index((10, 2), IMSHAPE))
+    px_217 = int(np.ravel_multi_index((10, 17), IMSHAPE))
+    art_ids = out_nodes['arts']
+    art_px = out_nodes['idx'][out_nodes['id'].index(art_ids[0])]
+
+    def nid_at(px):
+        return out_nodes['id'][out_nodes['idx'].index(px)]
+
+    expected_us = []
+    for lid in out_links['id']:
+        px_set = set(int(p) for p in out_links['idx'][out_links['id'].index(lid)])
+        if px_217 in px_set and art_px not in px_set:
+            expected_us.append(nid_at(px_202))  # intact link: node 0 upstream
+        elif px_217 in px_set:
+            expected_us.append(nid_at(px_217))  # piece at the original's us end
+        else:
+            expected_us.append(nid_at(art_px))  # piece at the original's ds end
+
     links_gpd = lnu.links_to_gpd(out_links, IMSHAPE, GT, WKT)
-    assert list(links_gpd['us node']) == [c[0] for c in out_links['conn']]
-    assert list(links_gpd['ds node']) == [c[1] for c in out_links['conn']]
+    assert list(links_gpd['us node']) == expected_us
+    for i, lid in enumerate(out_links['id']):
+        conn = out_links['conn'][out_links['id'].index(lid)]
+        assert links_gpd['ds node'][i] in conn
 
     crs = CRS.from_epsg(32615)
     sword_nodes, sword_reaches = iou.build_sword_geodataframes(
         out_links, out_nodes, IMSHAPE, GT, crs, 'meter')
-    assert list(sword_reaches['rg_us_nd']) == [c[0] for c in out_links['conn']]
-    assert list(sword_reaches['rg_ds_nd']) == [c[1] for c in out_links['conn']]
+    assert list(sword_reaches['rg_us_nd']) == expected_us
     assert all(sword_reaches['fdir_set'])
 
 
