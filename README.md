@@ -109,8 +109,9 @@ Prefer [`bench/`](bench/) when you need stage-level micro-benchmarks instead: it
 
 RivGraph logs through [loguru](https://loguru.readthedocs.io); library code never uses `print()`.
 
-- **Console**: With `verbose=True` (on `rivnetwork`, `river`, or `delta`), progress messages are written to stdout as bare text -- no timestamps or level prefixes. With `verbose=False`, the classes write nothing to stdout.
-- **Log file**: Every `rivnetwork`, `river`, or `delta` run writes `<name>_log.log` beside the results folder, regardless of `verbose`. Each record is timestamped: `[YYYY-MM-DD at HH:mm:ss] | <message>`.
+- **Console**: With `verbose=True` (on `rivnetwork`, `river`, `delta`, or `centerline`), progress messages are written to stdout as bare text -- no timestamps or level prefixes. With `verbose=False`, the classes write nothing to stdout.
+- **Log file**: Every `rivnetwork`, `river`, or `delta` run writes `<name>_log.log` beside the results folder, regardless of `verbose`; `centerline` writes `centerline_log.log` next to its results (`results_folder`, or the current working directory). Each record is timestamped: `[YYYY-MM-DD at HH:mm:ss] | <message>`.
+- **Per-instance sinks**: Constructing a RivGraph object adds its own file (and, with `verbose=True`, console) sinks and removes them again on teardown (context-manager exit). Instantiation never resets loguru's process-wide handler list, so sinks configured by a host application survive, and concurrent objects each log to their own files.
 - **Levels**: The file and console sinks apply their own level filters. Routine progress is logged at `info`; operationally important conditions -- continuity violations, unfixable cycles -- at `warning`; diagnostic traces (e.g. the skeleton walker's per-step state) at `debug`.
 - **Warnings**: I/O and export conditions and experimental-metric notices go through Python's `warnings` module. They appear on stderr regardless of `verbose` and respond to the standard `warnings` filtering machinery.
 
