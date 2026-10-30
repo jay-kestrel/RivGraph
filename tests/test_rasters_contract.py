@@ -203,3 +203,72 @@ def test_downsample_binary_geotiff_updates_resolution_and_values(tmp_path: Path)
         assert np.array_equal(down, np.array([[1, 0], [0, 1]], dtype=down.dtype))
         assert rasters.affine_to_geotransform(src.transform) == (500.0, 40.0, 0.0, 1000.0, 0.0, -40.0)
         assert set(np.unique(down)).issubset({0, 1})
+
+
+def test_crop_geotiff_empty_mask_raises_clear_error(tmp_path: Path):
+    """An all-zero (empty) mask has nothing to crop; fail with a clear error (finding I-M5)."""
+    rasters = require_rasters()
+    source = tmp_path / "empty_mask.tif"
+    out = tmp_path / "empty_crop.tif"
+    data = np.zeros((10, 10), dtype=np.uint8)
+    transform = from_origin(1000.0, 2000.0, 10.0, 10.0)
+    with rasterio.open(
+        source,
+        "w",
+        driver="GTiff",
+        height=data.shape[0],
+        width=data.shape[1],
+        count=1,
+        dtype=data.dtype,
+        crs="EPSG:32615",
+        transform=transform,
+    ) as dst:
+        dst.write(data, 1)
+
+    with pytest.raises(ValueError, match="no pixels to crop"):
+        rasters.crop_geotiff(source, outpath=out)
+
+
+def test_downsample_binary_geotiff_odd_dimensions_keep_registration(tmp_path: Path):
+    """Odd-dimension rasters must stay registered after downsampling (finding I-M3).
+
+    A 100x101 input at ds_factor=0.5 pads to 100x102 (one appended column), so
+    the output is 50x51 with cell size exactly 2x the input cell size and an
+    origin unchanged by the padding. The unfixed code padded both dimensions
+    symmetrically by the same amount and divided the geotransform by the wrong
+    (per-dimension-unaware) shape, shifting the origin to (480, 1020) here.
+    """
+    rasters = require_rasters()
+    source = tmp_path / "odd_dims_source.tif"
+    out = tmp_path / "odd_dims_out.tif"
+    data = np.zeros((100, 101), dtype=np.uint8)
+    data[40:60, 30:91] = 1
+    transform = from_origin(500.0, 1000.0, 20.0, 20.0)
+    with rasterio.open(
+        source,
+        "w",
+        driver="GTiff",
+        height=data.shape[0],
+        width=data.shape[1],
+        count=1,
+        dtype=data.dtype,
+        crs="EPSG:32615",
+        transform=transform,
+    ) as dst:
+        dst.write(data, 1)
+
+    returned = rasters.downsample_binary_geotiff(source, ds_factor=0.5, output_name=out)
+    assert Path(returned) == out
+
+    with rasterio.open(out) as src:
+        down = src.read(1)
+        assert down.shape == (50, 51)
+        out_gt = rasters.affine_to_geotransform(src.transform)
+        # Cell sizes: exactly ds_factor x the input cell size (within 0.1%).
+        assert abs(out_gt[1] - 2 * 20.0) <= 0.001 * 2 * 20.0
+        assert abs(abs(out_gt[5]) - 2 * 20.0) <= 0.001 * 2 * 20.0
+        # Registration: padding only appends pixels, so the output origin must
+        # coincide with the input origin (within 0.1% of an input cell).
+        assert abs(out_gt[0] - 500.0) <= 0.001 * 20.0
+        assert abs(out_gt[3] - 1000.0) <= 0.001 * 20.0
+        assert set(np.unique(down)).issubset({0, 1})

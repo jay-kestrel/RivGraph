@@ -123,10 +123,46 @@ def test_sword_export_contract_roundtrip(tmp_path, sword_geo_context, sword_netw
     assert np.allclose(sword_nodes["rg_flux"].astype(float), 0.7)
 
 
-def test_sword_export_requires_meter_units(sword_geo_context, sword_network):
+def test_sword_export_warns_on_unsupported_units(sword_geo_context, sword_network):
+    """Non-metre units warn explicitly and still export (finding I-M2)."""
     io_utils = require_io_utils()
     dims, gt, crs = sword_geo_context
     links, nodes = sword_network
 
-    with pytest.raises(TypeError, match="meters-based CRS"):
-        io_utils.build_sword_geodataframes(links, nodes, dims, gt, crs, "degree")
+    from loguru import logger
+
+    warnings_seen: list[str] = []
+    handler_id = logger.add(lambda msg: warnings_seen.append(str(msg)), level="WARNING")
+    try:
+        sword_nodes, sword_reaches = io_utils.build_sword_geodataframes(
+            links, nodes, dims, gt, crs, "US survey foot", metadata={"network": "demo"}
+        )
+    finally:
+        logger.remove(handler_id)
+
+    assert len(sword_nodes) > 0
+    assert len(sword_reaches) > 0
+    assert any("Unsupported unit" in warning for warning in warnings_seen)
+
+
+def test_sword_export_handles_non_epsg_crs(sword_geo_context, sword_network):
+    """WKT/proj4-defined CRSs (no integer EPSG code) must still transform (finding I-M7)."""
+    io_utils = require_io_utils()
+    dims, gt, _ = sword_geo_context
+    links, nodes = sword_network
+
+    crs = CRS.from_proj4(
+        "+proj=tmerc +lat_0=0 +lon_0=-99 +k=0.9996 "
+        "+x_0=512345 +y_0=0 +datum=WGS84 +units=m +no_defs"
+    )
+    # Precondition: this CRS has no EPSG code, the case that used to crash.
+    assert crs.to_epsg() is None
+
+    sword_nodes, sword_reaches = io_utils.build_sword_geodataframes(
+        links, nodes, dims, gt, crs, "meter"
+    )
+
+    assert sword_nodes.crs.to_epsg() == 4326
+    assert sword_reaches.crs.to_epsg() == 4326
+    assert np.isfinite(sword_nodes.geometry.x).all()
+    assert np.isfinite(sword_nodes.geometry.y).all()

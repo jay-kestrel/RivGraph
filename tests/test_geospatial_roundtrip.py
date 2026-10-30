@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 from pyproj import CRS
 
+import rivgraph.geo_utils as geo_utils
 import rivgraph.ln_utils as lnu
 from tests._helpers import require_io_utils, require_rasters
 
@@ -187,3 +188,40 @@ def test_geojson_export_reprojects_when_requested(tmp_path, geo_context, synthet
 def test_get_driver_supports_modern_vector_targets(path, expected_driver):
     io_utils = require_io_utils()
     assert io_utils.get_driver(path) == expected_driver
+
+
+def test_geotiff_vals_from_coords_within_bounds_returns_pixel_values():
+    """Control: in-bounds lookups keep returning the correct pixel."""
+    arr = np.arange(100, dtype=np.int32).reshape(10, 10)
+    gt = (0.0, 1.0, 0.0, 10.0, 0.0, -1.0)
+    coords = np.array([[5.5, 9.5]])  # col 5, row 0
+
+    vals = geo_utils.geotiff_vals_from_coords(coords, arr, gt)
+
+    assert vals == [5]
+
+
+@pytest.mark.parametrize(
+    "coord",
+    [
+        np.array([[5.5, 10.5]]),  # north of the raster; row wraps to the last row
+        np.array([[-0.5, 5.5]]),  # west of the raster; col wraps to the last col
+    ],
+)
+def test_geotiff_vals_from_coords_out_of_bounds_raises_naming_extent(coord):
+    """Out-of-bounds coordinates must raise, not silently wrap (finding I-M1)."""
+    arr = np.arange(100, dtype=np.int32).reshape(10, 10)
+    gt = (0.0, 1.0, 0.0, 10.0, 0.0, -1.0)
+
+    with pytest.raises(IndexError, match="outside the raster extent"):
+        geo_utils.geotiff_vals_from_coords(coord, arr, gt)
+
+
+@pytest.mark.parametrize("epsg", [6543, 2263])
+def test_get_unit_resolves_us_survey_foot_crs(epsg):
+    """US survey-foot State Plane CRSs are valid; get_unit must resolve them (finding I-M2)."""
+    assert geo_utils.get_unit(CRS.from_epsg(epsg)) == "US survey foot"
+
+
+def test_get_unit_metre_crs_unchanged():
+    assert geo_utils.get_unit(CRS.from_epsg(32615)) == "meter"
