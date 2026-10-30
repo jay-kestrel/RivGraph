@@ -9,6 +9,7 @@ Created on Mon Sep 10 09:39:19 2018
 import numpy as np
 from skimage import measure
 from scipy import stats
+from loguru import logger
 import rivgraph.im_utils as iu
 import rivgraph.ln_utils as lnu
 
@@ -366,8 +367,9 @@ def walkable_neighbors(link, Iskel):
 
     try:
         neighs = neighs - set(link[-2:])
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug('Could not exclude previously-visited pixels from walkable '
+                     'neighbors. Original error: {}'.format(exc))
 
     return neighs
 
@@ -511,8 +513,9 @@ def check_dup_links(linkid, links, nodes, links2do):
             links, nodes = delete_link(lid, links, nodes)
             try:
                 links2do.remove(lid)
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.debug('Duplicate link {} was not pending in links2do. '
+                             'Original error: {}'.format(lid, exc))
 
     return links, nodes, links2do
 

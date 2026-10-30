@@ -1190,7 +1190,7 @@ def fix_cycles(links, nodes):
             # we just skip these and report them so they can be manually
             # corrected.
             if len(all_combos) > 1024:
-                logger.info('The cycle links {} is too large to attempt to fix automatically.'.format(cycle_l))
+                logger.warning('The cycle links {} is too large to attempt to fix automatically.'.format(cycle_l))
                 continue
 
             # Iterate through each combination and determine violations: there are four conditions that must be met:
@@ -1266,7 +1266,7 @@ def fix_cycles(links, nodes):
             poss_configs = [i for i, (nv, nc, hp, ms) in enumerate(zip(cont_violators, len_cycle, has_path, manually_set)) if nv == 0 and nc == 0 and hp == 1 and ms == 0]
 
             if len(poss_configs) == 0:
-                logger.info('Unfixable cycle found at links: {}.'.format(cycle_l))
+                logger.warning('Unfixable cycle found at links: {}.'.format(cycle_l))
                 continue
 
             # Choose the configuration that flips the fewest links

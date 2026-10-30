@@ -1,9 +1,7 @@
 """Focused tests for ``rivgraph.classes`` base behaviors."""
 from __future__ import annotations
 
-import io
 import os
-import sys
 import unittest.mock as mock
 
 import numpy as np
@@ -117,21 +115,17 @@ class TestRivnetwork:
 
         assert A == 2
 
-    def test_logger_off(self, tmp_path):
+    def test_logger_off(self, tmp_path, capsys):
         _, _, rivnetwork = require_rivgraph_classes()
-        captured_output = io.StringIO()
-        sys.stdout = captured_output
         results_folder = os.path.join(tmp_path, "results")
         network = rivnetwork(self.name, str(self.path_to_mask), results_folder)
         assert os.path.isfile(network.paths["log"]) is True
-        sys.stdout = sys.__stdout__
-        assert captured_output.getvalue() == ""
+        # with verbose=False, nothing is printed to stdout
+        assert capsys.readouterr().out == ""
 
-    def test_logger_on(self, tmp_path):
+    def test_logger_on(self, tmp_path, capsys):
         _, _, rivnetwork = require_rivgraph_classes()
-        captured_output = io.StringIO()
-        sys.stdout = captured_output
         results_folder = os.path.join(tmp_path, "results")
         network = rivnetwork(self.name, str(self.path_to_mask), results_folder, verbose=True)
         assert os.path.isfile(network.paths["log"]) is True
-        assert captured_output.getvalue() == "---------- New Run ----------\n"
+        assert capsys.readouterr().out == "---------- New Run ----------\n"

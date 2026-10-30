@@ -275,7 +275,7 @@ def _skel_to_graph_python(Iskel):
                         links = lnu.link_updater(links, linkid, noturnidx)
                     # Else, shit. You've found a critical flaw in the algorithm.
                     else:
-                        logger.info('idx: {}, poss_steps: {}'.format(links['idx'][linkidx][-1], poss_steps))
+                        logger.debug('idx: {}, poss_steps: {}'.format(links['idx'][linkidx][-1], poss_steps))
                         raise RuntimeError('Ambiguous which step to take next :( Please raise issue at https://github.com/jonschwenk/RivGraph/issues.')
 
                 elif sum(isbp) == 1:
@@ -302,7 +302,7 @@ def _skel_to_graph_python(Iskel):
 
                         # If we don't have exactly one, shit.
                         if len(isbp_and_fourconn_idx) != 1:
-                            logger.info('idx: {}, poss_steps: {}'.format(links['idx'][linkidx][-1], poss_steps))
+                            logger.debug('idx: {}, poss_steps: {}'.format(links['idx'][linkidx][-1], poss_steps))
                             raise RuntimeError('There is not a unique branchpoint to step to.')
                         else:
                             links = lnu.link_updater(links, linkid, poss_steps[isbp_and_fourconn_idx[0]])
