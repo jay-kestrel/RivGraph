@@ -25,6 +25,12 @@ jobs:
   build-docs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    # Job-scoped so the pull-request envelope stays tight: PR builds no longer
+    # get id-token: write, and the two write grants below are consumed only by
+    # the upstream-guarded deployment steps.
+    permissions:
+      contents: write
+      pages: write
 
     steps:
       # The repo Actions policy only permits actions from repositories owned by
@@ -66,15 +72,77 @@ jobs:
         run: |
           make -C docs html
 
+      # The three GitHub Pages actions are blocked by the repo policy, so the
+      # deployment is inlined on the REST API. configure-pages@v5's contract:
+      # create the site with build_type "workflow" when it does not exist yet.
       - name: Configure GitHub Pages
         if: github.repository == 'VeinsOfTheEarth/RivGraph' && github.event_name == 'push' && github.ref == 'refs/heads/master'
-        uses: actions/configure-pages@v5
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          api="https://api.github.com/repos/${GITHUB_REPOSITORY}/pages"
+          status="$(curl -sS -o /tmp/pages-site.json -w '%{http_code}' \
+            -H 'Accept: application/vnd.github+json' \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "${api}")"
+          case "${status}" in
+            200) echo 'Pages site already configured';;
+            404) curl -sS -f -X POST \
+                   -H 'Accept: application/vnd.github+json' \
+                   -H "Authorization: Bearer ${GH_TOKEN}" \
+                   -H 'X-GitHub-Api-Version: 2022-11-28' \
+                   -d '{"build_type": "workflow", "source": {"branch": "master", "path": "/"}}' \
+                   "${api}" > /dev/null;;
+            *)   echo "Unexpected HTTP ${status} from ${api}:" >&2
+                 cat /tmp/pages-site.json >&2
+                 exit 1;;
+          esac
 
-      - name: Upload GitHub Pages artifact
+      # upload-pages-artifact@v4 packaged the built site as an Actions
+      # artifact, but Actions artifact uploads have no public REST API. The
+      # Pages deployment endpoint consumes a repository-owned artifact_url, so
+      # the tar is published as the commit's pre-release asset instead (see the
+      # deploy job).
+      - name: Package and publish GitHub Pages artifact
         if: github.repository == 'VeinsOfTheEarth/RivGraph' && github.event_name == 'push' && github.ref == 'refs/heads/master'
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: docs/build/html
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          api="https://api.github.com/repos/${GITHUB_REPOSITORY}"
+          tag="docs-${GITHUB_SHA}"
+          tar -chvf "${RUNNER_TEMP}/pages-artifact.tar" -C docs/build/html .
+          # Reuse the commit's pre-release when a previous attempt created it.
+          release="$(curl -sS -f \
+            -H 'Accept: application/vnd.github+json' \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "${api}/releases/tags/${tag}" || true)"
+          if [ -z "${release}" ]; then
+            release="$(curl -sS -f -X POST \
+              -H 'Accept: application/vnd.github+json' \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              -d "{\"tag_name\": \"${tag}\", \"target_commitish\": \"${GITHUB_SHA}\", \"name\": \"docs artifacts ${GITHUB_SHA}\", \"prerelease\": true}" \
+              "${api}/releases")"
+          fi
+          release_id="$(printf '%s' "${release}" | jq -er '.id')"
+          # Replace any stale asset from a previous attempt of this run.
+          asset_id="$(printf '%s' "${release}" | jq -r '.assets[] | select(.name == "pages-artifact.tar") | .id')"
+          if [ -n "${asset_id}" ]; then
+            curl -sS -f -X DELETE \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "${api}/releases/assets/${asset_id}" > /dev/null
+          fi
+          upload_url="$(printf '%s' "${release}" | jq -r '.upload_url' | sed 's/{?name,label}//')"
+          curl -sS -f -X POST \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H 'Content-Type: application/tar' \
+            --data-binary "@${RUNNER_TEMP}/pages-artifact.tar" \
+            "${upload_url}?name=pages-artifact.tar" > /dev/null
 
   deploy:
     if: github.repository == 'VeinsOfTheEarth/RivGraph' && github.event_name == 'push' && github.ref == 'refs/heads/master'
@@ -85,6 +153,64 @@ jobs:
     needs: build-docs
 
     steps:
+      # deploy-pages@v4 is blocked by the repo policy, so the deployment is
+      # inlined on the REST API: mint the OIDC token the endpoint requires,
+      # point it at the tar published by build-docs, and poll the deployment
+      # status until it reaches a terminal state.
+      - name: Mint OIDC deployment token
+        id: oidc
+        run: |
+          set -euo pipefail
+          oidc_token="$(curl -sS -f \
+            -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+            "${ACTIONS_ID_TOKEN_REQUEST_URL}" | jq -er '.value')"
+          echo "::add-mask::${oidc_token}"
+          echo "oidc_token=${oidc_token}" >> "$GITHUB_OUTPUT"
+
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        env:
+          GH_TOKEN: ${{ github.token }}
+          OIDC_TOKEN: ${{ steps.oidc.outputs.oidc_token }}
+        run: |
+          set -euo pipefail
+          api="https://api.github.com/repos/${GITHUB_REPOSITORY}"
+          asset_url="$(curl -sS -f \
+            -H 'Accept: application/vnd.github+json' \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            "${api}/releases/tags/docs-${GITHUB_SHA}" \
+            | jq -er '.assets[] | select(.name == "pages-artifact.tar") | .browser_download_url')"
+          jq -n \
+            --arg artifact_url "${asset_url}" \
+            --arg pages_build_version "${GITHUB_SHA}" \
+            --arg oidc_token "${OIDC_TOKEN}" \
+            '{artifact_url: $artifact_url, pages_build_version: $pages_build_version, oidc_token: $oidc_token}' \
+            > "${RUNNER_TEMP}/deployment.json"
+          deployment="$(curl -sS -f -X POST \
+            -H 'Accept: application/vnd.github+json' \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H 'X-GitHub-Api-Version: 2022-11-28' \
+            --data-binary "@${RUNNER_TEMP}/deployment.json" \
+            "${api}/pages/deployments")"
+          page_url="$(printf '%s' "${deployment}" | jq -er '.page_url')"
+          deployment_id="$(printf '%s' "${deployment}" | jq -er '.id')"
+          for _ in $(seq 1 60); do
+            status="$(curl -sS -f \
+              -H 'Accept: application/vnd.github+json' \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H 'X-GitHub-Api-Version: 2022-11-28' \
+              "${api}/pages/deployments/${deployment_id}" | jq -er '.status')"
+            case "${status}" in
+              succeed)
+                echo "Pages deployment succeeded: ${page_url}"
+                echo "page_url=${page_url}" >> "$GITHUB_OUTPUT"
+                exit 0;;
+              deployment_failed|deployment_cancelled|deployment_content_failed|deployment_lost)
+                echo "Pages deployment ended in ${status}" >&2
+                exit 1;;
+            esac
+            sleep 10
+          done
+          echo 'Pages deployment did not reach a terminal state in 10 minutes' >&2
+          exit 1
