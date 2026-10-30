@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=64"]
-build-backend = "setuptools.build_meta"
+requires = ["maturin>=1.9,<2"]
+build-backend = "maturin"
 
 [project]
 name = "rivgraph"
@@ -31,7 +31,7 @@ classifiers = [
 ]
 
 dependencies = [
-  "numpy>=1.26,<2",
+  "numpy>=2,<2.3",
   "scipy>=1.11,<1.14",
   "pandas>=2.2,<2.3",
   "matplotlib>=3.8,<3.11",
@@ -76,13 +76,8 @@ Documentation = "https://veinsoftheearth.github.io/RivGraph/"
 Repository = "https://github.com/VeinsOfTheEarth/RivGraph"
 Issues = "https://github.com/VeinsOfTheEarth/RivGraph/issues"
 
-[tool.setuptools]
-include-package-data = true
-
-[tool.setuptools.dynamic]
-version = { attr = "rivgraph.__version__" }
-
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["rivgraph", "rivgraph.*"]
-exclude = ["tests", "tests.*", "docs", "docs.*", "examples", "examples.*"]
+[tool.maturin]
+python-source = "."
+module-name = "rivgraph._native"
+features = ["pyo3/extension-module"]
+include = ["LICENSE.txt"]

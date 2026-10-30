@@ -4,6 +4,8 @@ Mask to Graph Utilities (mask_to_graph.py)
 
 Functions for converting a binary channel mask to a graphical representation.
 """
+import os
+
 from loguru import logger
 import numpy as np
 from scipy import ndimage as nd
@@ -65,6 +67,24 @@ def skel_to_graph(Iskel):
 
     """
 
+    if os.environ.get("PYDELTARCM_NATIVE") == "0":
+        return _skel_to_graph_python(Iskel)
+
+    from rivgraph import _native
+
+    skeleton = np.asarray(Iskel)
+    if skeleton.ndim != 2 or not np.all((skeleton == 0) | (skeleton == 1)):
+        raise ValueError("Skeleton must be a two-dimensional binary array")
+    links, nodes = _native.skel_to_graph(np.asarray(skeleton, dtype=np.uint8))
+    links['id'] = OrderedSet(links['id'])
+    nodes['idx'] = OrderedSet(nodes['idx'])
+    nodes['id'] = OrderedSet(nodes['id'])
+    # Keep the shared post-walk cleanup and public container types unchanged.
+    return lnu.remove_duplicate_links(links, nodes)
+
+
+def _skel_to_graph_python(Iskel):
+    """Reference implementation; selected by PYDELTARCM_NATIVE=0."""
     def check_startpoint(spidx, Iskel):
         """
         Returns True if a skeleton pixel's first neighbor is not a branchpoint

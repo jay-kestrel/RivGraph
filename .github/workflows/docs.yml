@@ -27,6 +27,9 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
       - name: Set up conda environment
         uses: conda-incubator/setup-miniconda@v3
         with:
@@ -48,14 +51,17 @@ jobs:
           make -C docs html
 
       - name: Configure GitHub Pages
+        if: github.repository == 'VeinsOfTheEarth/RivGraph' && github.event_name == 'push' && github.ref == 'refs/heads/master'
         uses: actions/configure-pages@v5
 
       - name: Upload GitHub Pages artifact
+        if: github.repository == 'VeinsOfTheEarth/RivGraph' && github.event_name == 'push' && github.ref == 'refs/heads/master'
         uses: actions/upload-pages-artifact@v4
         with:
           path: docs/build/html
 
   deploy:
+    if: github.repository == 'VeinsOfTheEarth/RivGraph' && github.event_name == 'push' && github.ref == 'refs/heads/master'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

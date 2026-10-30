@@ -18,6 +18,11 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
       - name: Set up conda environment
         uses: conda-incubator/setup-miniconda@v3
         with:
@@ -38,7 +43,14 @@ jobs:
         run: |
           pip install -e . --no-deps
 
+      - name: Check Rust formatting and lints
+        shell: bash -el {0}
+        run: |
+          cargo fmt --check
+          PYO3_PYTHON=$(which python) cargo clippy --locked -- -D warnings
+
       - name: Run test suite
         shell: bash -el {0}
         run: |
           python -m pytest -ra
+          PYDELTARCM_NATIVE=0 python -m pytest tests -ra
