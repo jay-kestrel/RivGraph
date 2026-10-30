@@ -1,0 +1,58 @@
+{
+  "tested_source_head": "8fe7e6a7fa87562d4968b0bc430d92f582726351",
+  "tested_base": "a8874a65002092f730021c48f135bfd23e0ada35",
+  "source_sha256": {
+    "Cargo.toml": "a6eb060ae02793b467aab46f9aedbbaf7ec3e854fe10f12b009c91b865b0ae9b",
+    "Cargo.lock": "57796a62d657b7cf2898e2ae638ecc2420334feb9c0cc344b173b1d2cd3b4a28",
+    "rust/directionality.rs": "64b738c68c5f8edb124f9d8820ed53e1c4ddcf9fa697609c521be81a5c3d6377",
+    "rust/lib.rs": "241971a704af295f343414dd36d1b1e0015bbc67468ff1639b2c891d8dc583b7",
+    "rust/widths.rs": "f5c54b34fb7c1972c0787f517330618fb43ba604e6d4728e06dcfd725e38eccd",
+    "rivgraph/directionality.py": "a737c4c951771ef902cc7247c55c8202697f2933bd4f5278a060b1cb654db69e",
+    "rivgraph/_directionality.py": "df7f00fa4acf71463c0e8e17d3a9fbdff2a02620245b0bfe8d4ffd3949d27546",
+    "tests/test_directionality_characterization.py": "822f07d5562da4dfee5201d6b13bdbc95653cffead80777cf5b7976a23679759",
+    "tests/data/directionality.json": "166dd23b5c465b18728dca2ba00f98316031aa928ed47d7a3cae56a0f762a3cc",
+    "tests/test_directionality_queries.py": "88ce38396d9beb3b947469d228d5d9bcf7a4c9dcf94878599b67c0126029a044",
+    "bench/test_benchmark_directionality.py": "ef004f870d203b9355a627473430141d6cb7532852663263381bca64198a1cd6"
+  },
+  "verification": {
+    "native": "392 passed, 45 skipped",
+    "python": "392 passed, 45 skipped",
+    "rust": "2 passed",
+    "clippy": "cargo clippy --all-targets -- -D warnings: pass",
+    "format": "cargo fmt --check: pass",
+    "lint": "ruff --isolated --select E9,F for new Python files: pass",
+    "goldens": "unchanged from characterization-only PR #26; pass on both backends",
+    "skips": "45 optional COBOL tests: shared library not built"
+  },
+  "commands": [
+    "maturin develop --release",
+    "PYDELTARCM_NATIVE=1 python -m pytest tests -q -rs",
+    "PYDELTARCM_NATIVE=0 python -m pytest tests -q -rs",
+    "cargo fmt --check",
+    "cargo clippy --all-targets -- -D warnings",
+    "cargo test",
+    "python -m pytest bench/test_benchmark_directionality.py bench/test_benchmark_rivgraph.py -k 'cycle_search or assign_flow' --benchmark-json=final-bench.json -q"
+  ],
+  "versions": {
+    "numpy": "2.2.6",
+    "networkx": "3.2.1",
+    "scipy": "1.13.1",
+    "rasterio": "1.4.4",
+    "affine": "2.4.0",
+    "pytest": "8.4.2",
+    "pytest-benchmark": "5.3.0",
+    "maturin": "1.16.0"
+  },
+  "analysis": {
+    "gate": "Accepted measured-analysis alternative, not a 5x end-to-end claim.",
+    "load_bearing_assumption": "Bridge and cycle overhead must dominate for these changes to materially accelerate the whole directionality stage; Colville profiling breaks that assumption for cycle repair.",
+    "colville": "Baseline 748.083 ms median, initial refactor 707.997 ms, final rebased tree 714.518 ms (five timed rounds each). Different runs are not statistical proof of the small whole-stage gain.",
+    "attribution": "Colville makes zero fix_cycles calls; baseline profiled known-flow assignment 0.551 s and synthetic DEM 0.270 s out of 1.068 s dominate. Bridges drop from 15.406 to 9.961 ms in 20-round direct wall measurements.",
+    "synthetic": "10-edge synthetic fix_cycles median 126.996 ms legacy, 0.535 ms reformulated Python, 0.356 ms Rust; 20 rounds after warmup, deepcopy excluded. This is a cycle-heavy synthetic gain, not a Colville-stage gain.",
+    "native_justification": "Final paired core medians: repairable Python 160.866 us vs native 6.929 us; no-terminal exhaustive Python 10.880 ms vs native 61.264 us. One native call per search.",
+    "bounds": "Worst case remains exponential, capped at ten flippable edges as before; cap is now checked before subset allocation. Exact minimum-cardinality/input-order choice is retained. Most easy-case savings come from early exit, not Rust.",
+    "base_audit": "Between c48cc27 and a8874a6, #19 changed width aggregates/sinuosity and artificial-node parallel-link surgery in ln_utils.py/rust/widths.rs; #14 added multiplex layers; #27 added delta scenarios; #26 added goldens. Neither directionality.py nor delta_directionality.py changed. Rebase was conflict-free, extension rebuilt, both suites rerun.",
+    "scope": "No CI/workflow changes; owner-disabled CI acceptance. Backend only, no rendered UI or visual evidence applicable.",
+    "incident": "PR #26 was merged externally while it contained only characterization tests. PR #29 continues task R4 with the implementation and this evidence."
+  }
+}

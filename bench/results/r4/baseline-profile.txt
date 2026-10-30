@@ -1,0 +1,48 @@
+         964324 function calls (962114 primitive calls) in 1.068 seconds
+
+   Ordered by: cumulative time
+   List reduced from 818 to 40 due to restriction <40>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    1.068    1.068 /home/user/work/RivGraph/rivgraph/classes.py:699(assign_flow_directions)
+        1    0.000    0.000    1.068    1.068 /home/user/work/RivGraph/rivgraph/deltas/delta_directionality.py:26(set_link_directions)
+        1    0.002    0.002    1.053    1.053 /home/user/work/RivGraph/rivgraph/deltas/delta_directionality.py:94(set_initial_directionality)
+       50    0.109    0.002    0.551    0.011 /home/user/work/RivGraph/rivgraph/directionality.py:1616(set_by_known_flow_directions)
+        1    0.029    0.029    0.270    0.270 /home/user/work/RivGraph/rivgraph/deltas/delta_directionality.py:514(dir_synthetic_DEM)
+        2    0.036    0.018    0.179    0.089 /home/user/work/r4-venv/lib/python3.12/site-packages/scipy/ndimage/_morphology.py:2322(distance_transform_edt)
+     8545    0.102    0.000    0.163    0.000 /home/user/work/RivGraph/rivgraph/directionality.py:1535(get_link_vector)
+ 2305/771    0.002    0.000    0.121    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/utils/backends.py:409(__call__)
+  250/203    0.002    0.000    0.099    0.000 /home/user/work/RivGraph/rivgraph/directionality.py:778(set_link)
+        2    0.094    0.047    0.094    0.047 {built-in method scipy.ndimage._nd_image.euclidean_feature_transform}
+    10570    0.039    0.000    0.094    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/numpy/linalg/_linalg.py:2331(det)
+    71190    0.083    0.000    0.083    0.000 {method 'index' of 'list' objects}
+  240/211    0.007    0.000    0.082    0.000 /home/user/work/RivGraph/rivgraph/directionality.py:1396(set_continuity)
+      163    0.006    0.000    0.072    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/scipy/stats/_axis_nan_policy.py:390(axis_nan_policy_wrapper)
+        2    0.007    0.004    0.071    0.035 /home/user/work/RivGraph/rivgraph/directionality.py:110(set_by_nearest_main_channel)
+      115    0.000    0.000    0.069    0.001 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/algorithms/shortest_paths/weighted.py:81(dijkstra_path)
+      115    0.000    0.000    0.069    0.001 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/algorithms/shortest_paths/weighted.py:389(single_source_dijkstra)
+      117    0.038    0.000    0.069    0.001 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/algorithms/shortest_paths/weighted.py:781(_dijkstra_multisource)
+      116    0.000    0.000    0.069    0.001 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/algorithms/shortest_paths/weighted.py:647(multi_source_dijkstra)
+    17210    0.059    0.000    0.059    0.000 {method 'reduce' of 'numpy.ufunc' objects}
+     5778    0.007    0.000    0.057    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/numpy/_core/fromnumeric.py:3735(mean)
+        1    0.001    0.001    0.055    0.055 /home/user/work/RivGraph/rivgraph/directionality.py:592(dir_bridges)
+     6024    0.024    0.000    0.052    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/numpy/_core/_methods.py:118(_mean)
+      650    0.001    0.000    0.048    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/algorithms/shortest_paths/generic.py:22(has_path)
+       50    0.013    0.000    0.048    0.001 /home/user/work/RivGraph/rivgraph/directionality.py:1663(get_candidates)
+      650    0.000    0.000    0.047    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/algorithms/shortest_paths/generic.py:43(shortest_path)
+     9317    0.011    0.000    0.047    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/numpy/_core/fromnumeric.py:2338(sum)
+      650    0.002    0.000    0.047    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/algorithms/shortest_paths/unweighted.py:196(bidirectional_shortest_path)
+    10167    0.015    0.000    0.046    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/numpy/_core/fromnumeric.py:69(_wrapreduction)
+      650    0.022    0.000    0.044    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/algorithms/shortest_paths/unweighted.py:260(_bidirectional_pred_succ)
+      246    0.004    0.000    0.026    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/scipy/stats/_stats_mstats_common.py:22(linregress)
+      163    0.001    0.000    0.024    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/scipy/stats/_axis_nan_policy.py:14(_broadcast_arrays)
+      190    0.024    0.000    0.024    0.000 {method 'astype' of 'numpy.ndarray' objects}
+    10570    0.012    0.000    0.022    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/numpy/linalg/_linalg.py:148(_commonType)
+      163    0.000    0.000    0.021    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/scipy/stats/_axis_nan_policy.py:25(_broadcast_array_shapes)
+  230/218    0.004    0.000    0.021    0.000 /home/user/work/RivGraph/rivgraph/directionality.py:1473(set_parallel_links)
+      163    0.008    0.000    0.021    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/scipy/stats/_axis_nan_policy.py:33(_broadcast_shapes)
+        1    0.000    0.000    0.019    0.019 /home/user/work/RivGraph/rivgraph/directionality.py:284(dir_main_channel)
+      489    0.002    0.000    0.019    0.000 /home/user/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/inspect.py:2501(_signature_from_callable)
+      489    0.005    0.000    0.015    0.000 /home/user/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/inspect.py:2397(_signature_from_function)
+
+

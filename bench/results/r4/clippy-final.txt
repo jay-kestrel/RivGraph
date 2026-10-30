@@ -1,0 +1,2 @@
+    Checking rivgraph-native v1.0.0 (/home/user/work/RivGraph)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.25s

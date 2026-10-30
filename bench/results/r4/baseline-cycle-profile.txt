@@ -1,0 +1,38 @@
+         949053 function calls (939802 primitive calls) in 0.427 seconds
+
+   Ordered by: cumulative time
+   List reduced from 127 to 30 due to restriction <30>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.026    0.026    0.427    0.427 /home/user/work/RivGraph/rivgraph/directionality.py:1085(fix_cycles)
+12294/3077    0.007    0.000    0.285    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/utils/backends.py:409(__call__)
+     1023    0.027    0.000    0.253    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/algorithms/cycles.py:876(find_cycle)
+    22699    0.056    0.000    0.215    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/algorithms/traversal/edgedfs.py:17(edge_dfs)
+    22608    0.018    0.000    0.097    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/algorithms/traversal/edgedfs.py:106(edges_from)
+     4092    0.025    0.000    0.095    0.000 /home/user/work/RivGraph/rivgraph/directionality.py:1055(flip_links_in_G)
+    22608    0.015    0.000    0.054    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/classes/reportviews.py:1088(__call__)
+    34840    0.030    0.000    0.042    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/classes/digraph.py:643(add_edge)
+    40267    0.017    0.000    0.040    0.000 {built-in method builtins.next}
+    22608    0.017    0.000    0.039    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/classes/reportviews.py:760(__init__)
+     2046    0.002    0.000    0.030    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/algorithms/shortest_paths/generic.py:22(has_path)
+57634/57601    0.012    0.000    0.030    0.000 {built-in method builtins.iter}
+     2046    0.002    0.000    0.027    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/algorithms/shortest_paths/generic.py:43(shortest_path)
+     2046    0.003    0.000    0.024    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/algorithms/shortest_paths/unweighted.py:196(bidirectional_shortest_path)
+    40187    0.017    0.000    0.023    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/classes/reportviews.py:788(<genexpr>)
+    28752    0.013    0.000    0.022    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/classes/graph.py:1964(nbunch_iter)
+     2046    0.010    0.000    0.019    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/algorithms/shortest_paths/unweighted.py:260(_bidirectional_pred_succ)
+    22608    0.011    0.000    0.018    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/classes/reportviews.py:787(__iter__)
+     2046    0.002    0.000    0.014    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/classes/reportviews.py:1062(__len__)
+     3591    0.004    0.000    0.012    0.000 {built-in method builtins.sum}
+    54535    0.009    0.000    0.009    0.000 {method 'add' of 'set' objects}
+    56033    0.009    0.000    0.009    0.000 {method 'append' of 'list' objects}
+    34792    0.009    0.000    0.009    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/classes/digraph.py:795(remove_edge)
+    26598    0.006    0.000    0.008    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/classes/reportviews.py:1063(<genexpr>)
+    68100    0.007    0.000    0.007    0.000 {built-in method builtins.len}
+    22608    0.006    0.000    0.006    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/classes/reportviews.py:768(<lambda>)
+    34943    0.006    0.000    0.006    0.000 {method 'update' of 'dict' objects}
+    26598    0.006    0.000    0.006    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/classes/reportviews.py:1065(__iter__)
+    34875    0.006    0.000    0.006    0.000 {method 'get' of 'dict' objects}
+    31822    0.005    0.000    0.005    0.000 /home/user/work/r4-venv/lib/python3.12/site-packages/networkx/classes/graph.py:453(__contains__)
+
+
