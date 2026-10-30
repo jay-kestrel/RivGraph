@@ -7,6 +7,7 @@ Created on Mon Sep 10 09:59:52 2018
 
 @author: Jon
 """
+import os
 from loguru import logger
 import shapely
 import numpy as np
@@ -449,6 +450,94 @@ def flip_link(links, linkid):
     return links
 
 
+def _scan_mask(Imask, dims, ray_r, ray_c, step_r, step_c):
+    """
+    Trace a ray from a pixel center until it exits the mask.
+
+    Uses an exact grid traversal rather than subpixel stepping so the
+    returned distance is deterministic and inexpensive.
+
+    This is the reference implementation of the ray marcher shared by the
+    Python and native width backends; the native implementation
+    (``rivgraph._native.scan_mask``) must reproduce it bit-exactly.
+    """
+    step_sign_r = 0 if np.isclose(step_r, 0.0) else int(np.sign(step_r))
+    step_sign_c = 0 if np.isclose(step_c, 0.0) else int(np.sign(step_c))
+
+    if step_sign_r == 0:
+        t_max_r = np.inf
+        t_delta_r = np.inf
+    else:
+        t_max_r = 0.5 / abs(step_r)
+        t_delta_r = 1.0 / abs(step_r)
+
+    if step_sign_c == 0:
+        t_max_c = np.inf
+        t_delta_c = np.inf
+    else:
+        t_max_c = 0.5 / abs(step_c)
+        t_delta_c = 1.0 / abs(step_c)
+
+    cur_r = int(ray_r)
+    cur_c = int(ray_c)
+
+    while True:
+        if t_max_r < t_max_c:
+            dist = t_max_r
+            cur_r += step_sign_r
+            t_max_r += t_delta_r
+        elif t_max_c < t_max_r:
+            dist = t_max_c
+            cur_c += step_sign_c
+            t_max_c += t_delta_c
+        else:
+            dist = t_max_r
+            cur_r += step_sign_r
+            cur_c += step_sign_c
+            t_max_r += t_delta_r
+            t_max_c += t_delta_c
+
+        if cur_r < 0 or cur_r >= dims[0] or cur_c < 0 or cur_c >= dims[1]:
+            return dist
+        if Imask[cur_r, cur_c] == 0:
+            return dist
+
+
+def _link_widths_native(links, Idt, pixlen):
+    """Compute all link widths and lengths with the native phase call.
+
+    One crossing of the Python/native boundary: link pixel indices, the
+    distance transform, and pixlen go in once, and every per-pixel width and
+    per-link statistic comes back in a single payload. Selected by default;
+    ``PYDELTARCM_NATIVE=0`` restores the pure-Python implementation in
+    :func:`link_widths_and_lengths`.
+    """
+    from rivgraph import _native
+
+    idx = links['idx']
+    link_lengths = np.fromiter((len(li) for li in idx), dtype=np.int64,
+                               count=len(idx))
+    if len(idx) > 0:
+        idx_flat = np.concatenate([np.asarray(li, dtype=np.int64) for li in idx])
+    else:
+        idx_flat = np.zeros(0, dtype=np.int64)
+
+    native = _native.link_widths_and_lengths(
+        idx_flat, link_lengths, np.ascontiguousarray(Idt, dtype=np.float64),
+        float(pixlen))
+
+    # max() stays on the Python side so result types match the reference path
+    # exactly (max(pixlen, value) can be the raw int/float pixlen).
+    links['wid_pix'] = list(native['wid_pix'])
+    links['len'] = [max(pixlen, v) for v in native['len']]
+    links['wid'] = [max(pixlen, v) for v in native['wid']]
+    links['wid_adj'] = [max(pixlen, v) for v in native['wid_adj']]
+    links['wid_med'] = list(native['wid_med'])
+    links['len_adj'] = [max(pixlen, v) for v in native['len_adj']]
+    links['sinuosity'] = list(native['sinuosity'])
+    return links
+
+
 def link_widths_and_lengths(links, Idt, pixlen=1):
     """
     Compute all link widths and lengths.
@@ -506,6 +595,9 @@ def link_widths_and_lengths(links, Idt, pixlen=1):
         Network links with width and length properties appended.
 
     """
+    if os.environ.get('PYDELTARCM_NATIVE') != '0':
+        return _link_widths_native(links, Idt, pixlen)
+
     # Initialize attribute storage
     links['wid_pix'] = []  # width at each pixel
     links['len'] = []
@@ -519,54 +611,6 @@ def link_widths_and_lengths(links, Idt, pixlen=1):
     Imask = Idt > 0
 
     width_mult = 1.1  # fraction of endpoint half-width to trim links before computing link width
-
-    def scan_mask(ray_r, ray_c, step_r, step_c):
-        """
-        Trace a ray from a pixel center until it exits the mask.
-
-        Uses an exact grid traversal rather than subpixel stepping so the
-        returned distance is deterministic and inexpensive.
-        """
-        step_sign_r = 0 if np.isclose(step_r, 0.0) else int(np.sign(step_r))
-        step_sign_c = 0 if np.isclose(step_c, 0.0) else int(np.sign(step_c))
-
-        if step_sign_r == 0:
-            t_max_r = np.inf
-            t_delta_r = np.inf
-        else:
-            t_max_r = 0.5 / abs(step_r)
-            t_delta_r = 1.0 / abs(step_r)
-
-        if step_sign_c == 0:
-            t_max_c = np.inf
-            t_delta_c = np.inf
-        else:
-            t_max_c = 0.5 / abs(step_c)
-            t_delta_c = 1.0 / abs(step_c)
-
-        cur_r = int(ray_r)
-        cur_c = int(ray_c)
-
-        while True:
-            if t_max_r < t_max_c:
-                dist = t_max_r
-                cur_r += step_sign_r
-                t_max_r += t_delta_r
-            elif t_max_c < t_max_r:
-                dist = t_max_c
-                cur_c += step_sign_c
-                t_max_c += t_delta_c
-            else:
-                dist = t_max_r
-                cur_r += step_sign_r
-                cur_c += step_sign_c
-                t_max_r += t_delta_r
-                t_max_c += t_delta_c
-
-            if cur_r < 0 or cur_r >= dims[0] or cur_c < 0 or cur_c >= dims[1]:
-                return dist
-            if Imask[cur_r, cur_c] == 0:
-                return dist
 
     def width_along_normal(rows, cols, pix_i, fallback_width):
         """Measure local width by scanning along the link's normal."""
@@ -592,8 +636,8 @@ def link_widths_and_lengths(links, Idt, pixlen=1):
         nr = nr / norm
         nc = nc / norm
 
-        left = scan_mask(rows[pix_i], cols[pix_i], nr, nc)
-        right = scan_mask(rows[pix_i], cols[pix_i], -nr, -nc)
+        left = _scan_mask(Imask, dims, rows[pix_i], cols[pix_i], nr, nc)
+        right = _scan_mask(Imask, dims, rows[pix_i], cols[pix_i], -nr, -nc)
 
         return (left + right) * pixlen
 
