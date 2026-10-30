@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Landscape layers (layers package)
 =================================
@@ -31,19 +30,33 @@ from rivgraph.layers.lakes import (
     add_lake_layer,
     extract_lakes,
 )
+from rivgraph.layers.patches import (
+    PatchExtraction,
+    add_patch_layer,
+    close_landmass,
+    extract_patches,
+    label_patches,
+    shared_boundary_lengths,
+)
 
 __all__ = [
     'EdgeType',
     'LayerType',
     'NodeType',
+    'PatchExtraction',
     'add_lake_layer',
     'add_landscape_layer',
+    'add_patch_layer',
     'build_multiplex',
     'channel_view',
+    'close_landmass',
     'extract_lakes',
+    'extract_patches',
+    'label_patches',
     'multiplex_from_node_link_data',
     'multiplex_to_node_link_data',
     'read_multiplex_json',
+    'shared_boundary_lengths',
     'validate_multiplex',
     'write_multiplex_json',
 ]
