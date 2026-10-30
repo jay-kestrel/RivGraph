@@ -1,8 +1,9 @@
 [![DOI](https://joss.theoj.org/papers/10.21105/joss.02952/status.svg)](https://doi.org/10.21105/joss.02952)
-[![tests](https://github.com/VeinsOfTheEarth/RivGraph/actions/workflows/tests.yml/badge.svg)](https://github.com/VeinsOfTheEarth/RivGraph/actions/workflows/tests.yml)
-[![docs](https://github.com/VeinsOfTheEarth/RivGraph/actions/workflows/docs.yml/badge.svg?branch=master)](https://github.com/VeinsOfTheEarth/RivGraph/actions/workflows/docs.yml)
+[![tests](https://github.com/jay-kestrel/RivGraph/actions/workflows/tests.yml/badge.svg)](https://github.com/jay-kestrel/RivGraph/actions/workflows/tests.yml)
+[![docs](https://github.com/jay-kestrel/RivGraph/actions/workflows/docs.yml/badge.svg?branch=master)](https://github.com/jay-kestrel/RivGraph/actions/workflows/docs.yml)
+[![benchmarks](https://github.com/jay-kestrel/RivGraph/actions/workflows/benchmarks.yml/badge.svg)](https://github.com/jay-kestrel/RivGraph/actions/workflows/benchmarks.yml)
 
-[![RivGraph logo](docs/logos/rg_logo_full.png)](https://VeinsOfTheEarth.github.io/RivGraph/ "Go to documentation.")
+[![RivGraph logo](docs/logos/rg_logo_full.png)](docs/source/index.rst "Go to documentation sources.")
 
 # RivGraph
 
@@ -26,13 +27,26 @@ The flow-directionality logic and validation are described in our [ESurf Dynamic
 
 ## Getting started
 
-Start with the [documentation](https://VeinsOfTheEarth.github.io/RivGraph/) and the notebooks in `examples/`. RivGraph contains two primary classes, `delta` and `river`, that organize the main processing workflows. These notebooks show the end-to-end usage patterns:
+Start with the in-repo [documentation sources](docs/source/index.rst) and the notebooks in `examples/`. The upstream hosted site at <https://veinsoftheearth.github.io/RivGraph/> describes upstream behavior only — it does not cover this fork's native walker or CLI. RivGraph contains two primary classes, `delta` and `river`, that organize the main processing workflows. These notebooks show the end-to-end usage patterns:
 
 
 - `examples/delta_example.ipynb`
 - `examples/braided_river_example.ipynb`
 - `examples/mouse_brain_example.ipynb`
 
+## Documentation in this repository
+
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) — as-built architecture: package layout, the mask→graph pipeline, the class hierarchy, and the Python/Rust backend boundary
+- [`docs/source/install/index.rst`](docs/source/install/index.rst) — installation, including the Rust toolchain requirement for source builds of this fork
+- [`docs/source/native/index.rst`](docs/source/native/index.rst) — the native skeleton walker: backend selection, parity guarantees, determinism, and performance
+- [`docs/source/cli/index.rst`](docs/source/cli/index.rst) — the `rivgraph` command-line interface (`env`, `inspect`, `demo`)
+- [`docs/source/apiref/index.rst`](docs/source/apiref/index.rst) — API reference generated from in-code docstrings
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — development setup, dual-backend test invocation, and conventions
+- [`CHANGELOG.md`](CHANGELOG.md) — release and fork history
+
+### Fork vs upstream
+
+This repository is a fork of [VeinsOfTheEarth/RivGraph](https://github.com/VeinsOfTheEarth/RivGraph). Beyond the upstream v1.0 codebase, the fork adds the Rust native skeleton walker (PR #3), a pytest-benchmark harness (PR #1), core-graph and geo/raster/IO hardening fixes (PRs #2, #4, #5), and the `rivgraph` CLI (PR #6); the fork history is in the [changelog](CHANGELOG.md). Package metadata (`pyproject.toml` URLs) and the conda-forge distribution still refer to upstream, and the fork publishes no wheels or releases — builds from this repository are source-only.
 
 ## Native skeleton walker (fork build)
 
@@ -57,6 +71,8 @@ Python fallback will be selected at runtime.
 name is shared with the sibling pyDeltaRCM port). It is checked on every call.
 Missing/broken native extensions raise their import error rather than silently
 changing backends. The reference path itself does not import the extension.
+The backend contract, parity guarantees, determinism model, and benchmark
+tables are documented in [`docs/source/native/index.rst`](docs/source/native/index.rst).
 
 The complete walk, neighborhood calculations, branchpoint pruning and topology
 updates run in one Rust call. Python retains public `OrderedSet` containers and
@@ -89,7 +105,7 @@ RivGraph was initially released before the advent of LLMs and thus v0.5.0 was wr
 
 ## Contributing
 
-Bug reports, documentation improvements, and pull requests are welcome. The easiest way to start is to open an issue in the [tracker](https://github.com/VeinsOfTheEarth/RivGraph/issues).
+Documentation improvements, bug reports, and pull requests are welcome — see [`CONTRIBUTING.md`](CONTRIBUTING.md) for environment setup, dual-backend test invocation, and conventions. The GitHub issue tracker is disabled on this fork, so please raise concerns in a pull request; the upstream [issue tracker](https://github.com/VeinsOfTheEarth/RivGraph/issues) remains the right place for upstream-only behavior.
 
 ## Citing RivGraph
 
@@ -101,4 +117,4 @@ If you use RivGraph's flux paritioning scheme that asssumes steady-state, width-
 
 ## License
 
-RivGraph is distributed under the [BSD 3-clause license](LICENSE.txt).
+RivGraph is distributed under the [BSD 3-clause license](LICENSE.txt). Note that `LICENSE.txt` carries a BSD-3-Clause notice preceded by a Los Alamos National Laboratory government-contract header, so GitHub detects the repository license as "Other" rather than BSD-3-Clause; the header came with the upstream repository.
