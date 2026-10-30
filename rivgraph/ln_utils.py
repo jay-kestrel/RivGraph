@@ -1454,13 +1454,16 @@ def add_artificial_nodes(links, nodes, imshape, gt):
 
             newlinkids = links['id'][-2:]
             for nl in newlinkids:
-                lconn = links['conn'][links['id'].index(nl)]
-                if us_node in lconn:
-                    if lconn[0] != us_node:
-                        lconn = lconn[::-1]
-                if ds_node in lconn:
-                    if lconn[1] != ds_node:
-                        lconn = lconn[::-1]
+                nlidx = links['id'].index(nl)
+                lconn = links['conn'][nlidx]
+                # Write reversals back--rebinding the local copy alone lets a
+                # flipped link's pieces carry the pixel walk order instead of
+                # the original link's conn orientation.
+                if us_node in lconn and lconn[0] != us_node:
+                    links['conn'][nlidx] = lconn[::-1]
+                if ds_node in links['conn'][nlidx]:
+                    if links['conn'][nlidx][1] != ds_node:
+                        links['conn'][nlidx] = links['conn'][nlidx][::-1]
 
             # Delete the old link
             links, nodes = delete_link(links, nodes, l2b)

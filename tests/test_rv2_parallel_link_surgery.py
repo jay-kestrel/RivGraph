@@ -168,14 +168,27 @@ def test_directionality_confirms_split_orientation(strip_idt):
     set_parallel_links on the stale links['parallels'] entries.
     """
     links, nodes = _parallel_network([[0, 1], [1, 0]], [STRAIGHT, UPPER])
+    orig_us, orig_ds = links['conn'][links['id'].index(2)]
+    orig_ids = set(links['id'])
 
     out_links, out_nodes = lnu.add_artificial_nodes(links, nodes, IMSHAPE, GT)
     before = [list(c) for c in out_links['conn']]
+    art_id = out_nodes['id'][-1]
 
     for lid in list(out_links['id']):
         lidx = out_links['id'].index(lid)
+        conn = out_links['conn'][lidx]
+        # Semantic upstream per piece: the original link's upstream node for
+        # its us piece, the artificial node for its ds piece; unsplit links
+        # keep their own orientation.
+        if lid in orig_ids:
+            usnode = conn[0]
+        elif orig_us in conn:
+            usnode = orig_us
+        else:
+            usnode = art_id
         out_links, out_nodes = dir_mod.set_link(
-            out_links, out_nodes, lidx, out_links['conn'][lidx][0])
+            out_links, out_nodes, lidx, usnode)
 
     assert [list(c) for c in out_links['conn']] == before
 
@@ -193,6 +206,9 @@ def test_exporters_preserve_conn0_upstream(strip_idt):
 
     # Widths must be recomputed after the split (they were dropped on purpose).
     out_links = lnu.link_widths_and_lengths(out_links, strip_idt, pixlen=1)
+
+    # Finalize IDs before exporting (the documented post-topology workflow).
+    out_links, out_nodes = lnu.finalize_network_ids(out_links, out_nodes)
 
     links_gpd = lnu.links_to_gpd(out_links, IMSHAPE, GT, WKT)
     assert list(links_gpd['us node']) == [c[0] for c in out_links['conn']]
@@ -286,6 +302,9 @@ def test_sword_export_handles_one_pixel_links(strip_idt):
         'outlets': [1],
     }
     links = lnu.link_widths_and_lengths(links, strip_idt, pixlen=1)
+
+    # Finalize IDs before exporting (the documented post-topology workflow).
+    links, nodes = lnu.finalize_network_ids(links, nodes)
 
     crs = CRS.from_epsg(32615)
     with warnings.catch_warnings():
