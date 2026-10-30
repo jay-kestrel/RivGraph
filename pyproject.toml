@@ -104,3 +104,9 @@ filterwarnings = [
   "ignore:`in1d` is deprecated:DeprecationWarning",
   "ignore:Conversion of an array with ndim > 0 to a scalar:DeprecationWarning",
 ]
+
+markers = [
+  # Full-pipeline scenario runs (scenarios suite) are long; the quick subset
+  # runs in the default suite, full runs on demand and in scenarios.yml.
+  "slow: long-running full-pipeline scenario runs (deselect with '-m not slow')",
+]
