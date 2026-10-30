@@ -78,3 +78,72 @@ def test_flip_links_in_G():
     [x, y] = G.edges.data()
     assert x == (2, 1, {})
     assert y == (3, 2, {})
+
+
+def test_dir_shortest_paths_nodes_repeated_invocation():
+    """Guessing the same link twice must not raise.
+
+    The guess lookup called .index(alg) on links['guess_alg'] (the outer
+    list of per-link lists) instead of the per-link list, so a second
+    invocation of the algorithm on a link that already carries a guess
+    raised 'ValueError: 12 is not in list'.
+    """
+    di = _directionality_module()
+
+    # 4-node line network: nodes 0-1-2-3, outlet at node 3.
+    links = {
+        'id': [0, 1, 2],
+        'conn': [[0, 1], [1, 2], [2, 3]],
+        'len': [1.0, 1.0, 1.0],
+        'idx': [[[0, 0], [0, 1]], [[0, 1], [0, 2]], [[0, 2], [0, 3]]],
+    }
+    nodes = {
+        'id': [0, 1, 2, 3],
+        'idx': [[0, 0], [0, 1], [0, 2], [0, 3]],
+        'conn': [[0], [0, 1], [1, 2], [2]],
+        'inlets': [],
+        'outlets': [3],
+    }
+    links, nodes = di.add_directionality_trackers(links, nodes, 'delta')
+
+    links, nodes = di.dir_shortest_paths_nodes(links, nodes)
+    # Second pass over the same network: raised ValueError before the fix.
+    links, nodes = di.dir_shortest_paths_nodes(links, nodes)
+
+    assert links['guess_alg'][0] == [12]
+    assert links['guess'][0] == [0]
+
+
+def test_fix_sources_and_sinks_applies_fix_at_link_index_zero():
+    """A repair chosen at link index 0 must be applied.
+
+    ``if linkidx:`` tests the truthiness of a list index, so the valid
+    repair was silently skipped whenever the shortest fixable link sat at
+    index 0.
+    """
+    di = _directionality_module()
+
+    # 3-node line: node 1 is a source (both links flow away from it) and
+    # link 0 is the shortest fixable link, so link index 0 gets chosen.
+    links = {
+        'id': [0, 1],
+        'conn': [[1, 0], [1, 2]],
+        'len': [1.0, 2.0],
+        'idx': [[[0, 1], [0, 0]], [[0, 1], [0, 2]]],
+    }
+    nodes = {
+        'id': [0, 1, 2],
+        'idx': [[0, 0], [0, 1], [0, 2]],
+        'conn': [[0], [0, 1], [1]],
+        'inlets': [],
+        'outlets': [0, 2],
+    }
+    links, nodes = di.add_directionality_trackers(links, nodes, 'delta')
+    links['certain'][:] = 1  # both links have set directions, so node 1 is checked
+
+    assert di.check_continuity(links, nodes) == [1]
+
+    links, nodes = di.fix_sources_and_sinks(links, nodes)
+
+    assert di.check_continuity(links, nodes) == []
+    assert links['conn'][0] == [0, 1]

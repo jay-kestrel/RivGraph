@@ -236,7 +236,7 @@ def idcs_no_turnaround(idcs, Iskel):
     elif idxdif == -1:
         walkdirs = [-ncols+1, 1, ncols+1]
     elif idxdif == 1:
-        walkdirs = [-ncols-1, -1, -ncols-1]
+        walkdirs = [-ncols-1, -1, ncols-1]
     elif idxdif == ncols-1:
         walkdirs = [-ncols, -ncols+1, 1]
     elif idxdif == ncols:
@@ -562,10 +562,10 @@ def is_bp(idx, Iskel):
 
         cpy, cpx = np.where(Ilab == Ilab[centidx])
         big_enough = 1
-        if 1 in cpx or size[0]-2 in cpx:
+        if 1 in cpy or size[0]-2 in cpy:
             size = (size[0] + 4, size[1])
             big_enough = 0
-        if 1 in cpy or size[1]-2 in cpy:
+        if 1 in cpx or size[1]-2 in cpx:
             size = (size[0], size[1] + 4)
             big_enough = 0
 
@@ -656,12 +656,12 @@ def isbp_parsimonious(Ic, Icr, Inar, Infr):
         naxconn = Inar[bpsolo]
         maxnax = [bps for bps, nl in zip(bpsolo, naxconn) if nl == max(naxconn)]
         if len(maxnax) == 1:
-            return [maxnax]
+            return maxnax
         else:
             fourconn = Infr[bpsolo]
             maxfour = [bpsolo[i] for i, fc in enumerate(fourconn) if fc == max(fourconn)]
             if len(maxfour) == 1:
-                return [maxfour]
+                return maxfour
         # Now see if there's a max 4-conn within the max naxes-conn
         fourconn = Infr[maxnax]
         maxfour = [maxnax[i] for i, fc in enumerate(fourconn) if fc == max(fourconn)]

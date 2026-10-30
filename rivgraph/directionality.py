@@ -402,7 +402,7 @@ def dir_shortest_paths_nodes(links, nodes):
 
         if alg in links['guess_alg'][linkidx]:
             # If the guess agrees with previously guessed for this algorithm, move on
-            if links['guess'][linkidx][links['guess_alg'].index(alg)] == nid:
+            if links['guess'][linkidx][links['guess_alg'][linkidx].index(alg)] == nid:
                 continue
             else:
                 links['guess'][linkidx].remove(nid)
@@ -901,7 +901,7 @@ def fix_sources_and_sinks(links, nodes):
             linklens = [links['len'][links['id'].index(l)] for l in poss_links]
             linkidx = links['id'].index(poss_links[linklens.index(min(linklens))])
 
-        if linkidx:
+        if linkidx is not None:
             set_link(links, nodes, linkidx, links['conn'][linkidx][1], alg=algmap('sourcesinkfix'))
 
     return links, nodes
