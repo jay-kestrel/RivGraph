@@ -38,6 +38,13 @@ jobs:
           python --version
           which python
 
+      - name: Install GnuCOBOL
+        shell: bash -el {0}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gnucobol3
+          cobc --version
+
       - name: Install RivGraph
         shell: bash -el {0}
         run: |
@@ -49,8 +56,14 @@ jobs:
           cargo fmt --check
           PYO3_PYTHON=$(which python) cargo clippy --locked -- -D warnings
 
+      - name: Build COBOL walker backend
+        shell: bash -el {0}
+        run: |
+          make -C cobol
+
       - name: Run test suite
         shell: bash -el {0}
         run: |
           python -m pytest -ra
           PYDELTARCM_NATIVE=0 python -m pytest tests -ra
+          RIVGRAPH_COBOL=1 python -m pytest tests -ra
