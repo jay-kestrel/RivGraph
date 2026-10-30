@@ -68,6 +68,7 @@ def test_quick_exits_zero_and_writes_reports(quick_run):  # AC2
 def test_quick_records_contract(quick_run):  # AC3
     results_dir, _ = quick_run
     records = json.loads((results_dir / "scenario_results.json").read_text())
+    runner.discover_scenario_modules()
     for record in records:
         assert record["status"] == "ok", record.get("error")
         for key in ("name", "mask_path", "rows", "cols", "pixels", "crs"):
@@ -77,9 +78,11 @@ def test_quick_records_contract(quick_run):  # AC3
             assert key in record["environment"]
         assert record["phases"]
         assert any(phase["seconds"] > 0 for phase in record["phases"])
-        # Network scenarios always report the processed-network summary.
-        for key in ("n_links", "n_nodes", "total_channel_length_px"):
-            assert key in record["outputs"]
+        # Network scenarios always report the processed-network summary;
+        # image-stage scenarios (skeletonize/scaling) report their own counts.
+        if runner.SCENARIOS[record["scenario"]].reports_network:
+            for key in ("n_links", "n_nodes", "total_channel_length_px"):
+                assert key in record["outputs"]
 
 
 def test_meander_smoke_sanity(quick_run):  # AC4
@@ -108,3 +111,44 @@ def test_in_process_determinism(tmp_path):  # AC5
         phase.name for phase in second.phases
     ]
     assert first.outputs == second.outputs
+
+
+# -- Delta family: full-pipeline runs (Blueprint AC6 and the scaling record).
+# In-process runs through the public API; timing fields are the only thing
+# they leave unasserted.
+
+
+@pytest.mark.slow
+def test_delta_colville_full_end_to_end(tmp_path):  # AC6
+    runner.discover_scenario_modules()
+    spec = runner.SCENARIOS["delta_colville_full"]
+    result = runner.run_scenario(spec, tmp_path)
+    assert result.status == "ok", result.error
+    outputs = result.outputs
+    for key in ("n_links", "n_nodes", "total_channel_length_px",
+                "n_inlets", "n_outlets", "n_islands"):
+        assert key in outputs
+    assert outputs["n_links"] > 0
+    assert outputs["n_nodes"] > 0
+    assert outputs["total_channel_length_px"] > 0
+    assert outputs["n_inlets"] > 0
+    assert outputs["n_outlets"] > 0
+    assert outputs["n_islands"] > 0
+    # Topologic metrics digest and flux split are populated.
+    assert outputs["topo"]["nonlin_entropy_rate"]
+    assert sum(outputs["flux"]["outlet_split"].values()) > 0
+
+
+@pytest.mark.slow
+def test_delta_colville_scaling_rows(tmp_path):
+    runner.discover_scenario_modules()
+    spec = runner.SCENARIOS["delta_colville_scaling"]
+    result = runner.run_scenario(spec, tmp_path)
+    assert result.status == "ok", result.error
+    rows = result.outputs["scale_rows"]
+    assert result.outputs["n_scales"] == 3
+    assert [row["scale"] for row in rows] == [0.5, 0.75, 1.0]
+    for row in rows:
+        assert row["seconds"] > 0
+        assert row["pixels_per_s"] > 0
+        assert row["n_skeleton_pixels"] > 0
