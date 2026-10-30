@@ -263,8 +263,9 @@ def _crs_is_epsg_4326(crs):
         axis_dirs = [getattr(axis, 'direction', '').lower() for axis in axis_info]
         if axis_dirs[:2] == ['east', 'north'] and getattr(crs, 'is_geographic', False):
             return True
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.debug('Could not inspect CRS axis information; treating the CRS '
+                     'as non-geographic. Original error: {}'.format(exc))
 
     return False
 

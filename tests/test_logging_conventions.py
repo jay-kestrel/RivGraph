@@ -200,3 +200,95 @@ class TestWalkerTraceLevel:
         assert len(debug) == 1
         assert debug[0]['message'].startswith('idx: ')
         assert 'poss_steps:' in debug[0]['message']
+
+
+class TestSwallowedExceptionTrails:
+    """Swallowed-exception handlers leave a debug trail (house pattern)."""
+
+    def test_crs_axis_inspection_failure_logs_debug(self, loguru_records):
+        records = loguru_records()
+        from rivgraph import io_utils
+
+        # A CRS whose axis-direction lookup raises: the handler must swallow
+        # the error, log it at debug, and still return False (non-geographic).
+        class _ExplodingAxis:
+            @property
+            def direction(self):
+                raise RuntimeError('axis boom')
+
+        class _OddCRS:
+            axis_info = [_ExplodingAxis()]
+            is_geographic = False
+
+        assert io_utils._crs_is_epsg_4326(_OddCRS()) is False
+
+        debug = [r for r in records if r['level'].name == 'DEBUG']
+        assert len(debug) == 1
+        assert 'axis boom' in debug[0]['message']
+
+    def test_walkable_neighbors_swallows_and_logs_debug(self, loguru_records):
+        records = loguru_records()
+        walk = _walk_module()
+
+        # A link whose [-2:] slice raises: the handler must swallow the error
+        # and log it at debug, returning the unfiltered neighbor set -- the
+        # same set that existed before the exclusion step.
+        class _SliceRaises(list):
+            def __getitem__(self, item):
+                if isinstance(item, slice) and item.start == -2:
+                    raise ValueError('boom')
+                return list.__getitem__(self, item)
+
+        Iskel = np.zeros((5, 5))
+        Iskel[1, 3] = 1  # flat 8
+        Iskel[3, 3] = 1  # flat 18
+        link = _SliceRaises([6, 8, 12])  # head 12
+
+        neighs = walk.walkable_neighbors(link, Iskel)
+
+        assert set(map(int, neighs)) == {8, 18}
+        debug = [r for r in records if r['level'].name == 'DEBUG']
+        assert len(debug) == 1
+        assert 'boom' in debug[0]['message']
+
+    def test_check_dup_links_missing_links2do_logs_debug(self, loguru_records):
+        records = loguru_records()
+        walk = _walk_module()
+
+        # Link 5 duplicates link 7 (same pixels, reversed); after the
+        # duplicate is deleted, links2do (already empty) cannot have 7
+        # removed, which the handler must log at debug while keeping the
+        # returned network state intact.
+        links = {
+            'id': [5, 7],
+            'idx': [[(0, 1), (0, 2), (0, 3)], [(0, 3), (0, 2), (0, 1)]],
+            'conn': [[0, 1], [1, 0]],
+        }
+        nodes = {'id': [0, 1], 'conn': [[5, 7], [5, 7]]}
+
+        links, nodes, _ = walk.check_dup_links(5, links, nodes, set())
+
+        assert links['id'] == [5]
+        assert nodes['conn'] == [[5], [5]]
+        debug = [r for r in records if r['level'].name == 'DEBUG']
+        assert len(debug) == 1
+        assert '7' in debug[0]['message']
+
+    def test_dir_centerline_missing_mesh_node_logs_debug(self, loguru_records):
+        records = loguru_records()
+        from rivgraph.rivers import river_directionality as rd
+
+        # Node 0 sits inside the single mesh polygon and node 1 does not, so
+        # the link's second endpoint lookup raises KeyError: the handler must
+        # log it at debug and leave the link's centerline distance at zero.
+        nodes = {'id': [0, 1], 'idx': np.array([55, 0])}
+        links = {'id': [0], 'conn': [[0, 1]], 'idx': [[55, 0]]}
+        meshpolys = [[(4, 4), (6, 4), (6, 6), (4, 6)]]
+        Imask = np.zeros((10, 10))
+        gt = (0, 1, 0, 10, 0, -1)
+
+        links = rd.dir_centerline(links, nodes, meshpolys, [], Imask, gt, 1.0)
+
+        assert links['cldists'][0][0] == 0
+        debug = [r for r in records if r['level'].name == 'DEBUG']
+        assert len(debug) == 1

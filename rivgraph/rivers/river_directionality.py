@@ -552,8 +552,10 @@ def dir_centerline(links, nodes, meshpolys, meshlines, Imask, gt, pixlen):
             first = intersect.loc[lconn[0]].index_right
             second = intersect.loc[lconn[1]].index_right
             cldists[i] = second-first
-        except KeyError:
-            pass
+        except KeyError as exc:
+            logger.debug('A link endpoint was not found among the node-mesh '
+                         'intersections; its centerline distance guess is left '
+                         'unset. Original error: {}'.format(exc))
 
     for i, c in enumerate(cldists):
         if c != 0:
