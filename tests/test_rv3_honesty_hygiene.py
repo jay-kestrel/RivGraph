@@ -234,7 +234,7 @@ def _bifurcation_network():
                        (10, 14), (10, 15), (10, 16)]),
                 _path([(10, 9), (11, 9), (12, 9), (13, 9), (14, 9), (15, 10),
                        (16, 11), (16, 12)])],
-        'wid_adj': [5.0, 5.0, 5.0],
+        'wid_adj': [6.0, 6.0, 6.0],
         'wid_pix': [np.full(8, 2.0), np.full(8, 2.0), np.full(8, 2.0)],
         'certain': [1, 1, 1],
     }
@@ -253,12 +253,18 @@ def _bifurcation_network():
 
 def test_junction_angles_accepts_documented_lin_weight():
     """F11: the documented weight='lin' behaves as the implemented 'linear'."""
+    # Fresh fixture per call: junction_angles assigns its results onto the
+    # passed nodes dict, so sharing one fixture would alias all three runs
+    # to the last call's values.
     links, nodes = _bifurcation_network()
-
     nodes_lin = lnu.junction_angles(links, nodes, IMSHAPE, pixlen=1,
                                     weight='lin')
+
+    links, nodes = _bifurcation_network()
     nodes_linear = lnu.junction_angles(links, nodes, IMSHAPE, pixlen=1,
                                        weight='linear')
+
+    links, nodes = _bifurcation_network()
     nodes_none = lnu.junction_angles(links, nodes, IMSHAPE, pixlen=1,
                                      weight=None)
 

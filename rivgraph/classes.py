@@ -258,9 +258,7 @@ class rivnetwork:
                                              weight=weight)
 
 
-    def get_islands(self, props=['area', 'maxwidth', 'axis_major_length',
-                                 'axis_minor_length', 'surrounding_links'],
-                          connectivity=2):
+    def get_islands(self, props=None, connectivity=2):
         """
         Finds all the islands in the binary mask and computes their morphological
         properties. Can be used to help "clean" masks of small islands. Must
@@ -271,7 +269,9 @@ class rivnetwork:
         props : list, optional
             Properties to compute for each island. Properties can be any of those
             provided by rivgraph.im_utils.regionprops.
-            The default is ['area', 'maxwidth', 'axis_major_length', 'axis_minor_length'].
+            The default is ['area', 'maxwidth', 'axis_major_length',
+            'axis_minor_length', 'surrounding_links']. The list is never
+            modified in place.
         connectivity : int, optional
             If 1, 4-connectivity will be used to determine connected blobs. If
             2, 8-connectivity will be used. The default is 2.
@@ -284,6 +284,13 @@ class rivnetwork:
              initialized to make thresholding easier.
 
         """
+        if props is None:
+            props = ['area', 'maxwidth', 'axis_major_length',
+                     'axis_minor_length', 'surrounding_links']
+        # Work on a copy: the previous default-list mutation removed
+        # 'surrounding_links' from the shared default (and from
+        # caller-provided lists), silently changing later calls.
+        props = list(props)
         do_surr = False
         if 'surrounding_links' in props:
             props.remove('surrounding_links')
@@ -1120,11 +1127,11 @@ class centerline():
 
     def infsC(self, x=None, y=None):
 
-        if not hasattr(self, 'C'):
-            self.curvature()
-
-        # Use curvature to find inflection points
-        self.infs_C = cu.inflection_points(self.C)
+        # C is a method, so hasattr(self, 'C') was always true and the bound
+        # method itself was passed to inflection_points (which crashed on
+        # subscripting it). Compute the curvature array, then locate its
+        # zero crossings.
+        self.infs_C = cu.inflection_points(self.C(x, y))
 
 
     def intersection_points(self, x2, y2, x1=None, y1=None):
@@ -1235,46 +1242,19 @@ class centerline():
 
     def mig_rate_zs(self, x2, y2, dt_years, x1=None, y1=None, window=None):
         """
-        Compute migration rate using Sylvester et al's method of
-        dynamic time warping. Also computes a smoothed version of the
-        migration rates, and a smoothed version with cutoff-affected
-        points set to NaN.
+        Retired: the ZS dynamic-time-warping migration-rate method.
+
+        This method depended on the unbundled curvaturepy package, resolved
+        through a hardcoded personal Windows path, so it crashed with a
+        ModuleNotFoundError on every machine. Use
+        ``mig_rate_transect_matching`` (manual-transect matching) for
+        migration rates instead.
         """
-        if x1 is None:
-            x1, y1, _ = self.__get_x_and_y()
-
-        # If no migration rate smoothing parameter is provided, use the same
-        # one used for smoothing curvatures, else window size is 5.
-        if window is None:
-            if hasattr(self, 'window_C'):
-                window = self.window_C
-            else:
-                window = 5  # must be greater than the polyorder, which is 3 by default
-
-        import os
-        import sys
-        script_dir = r"C:\Users\Jon\Desktop\Research\Koyukukon\Normalize migration rates\Code\curvaturepy-master"
-        sys.path.append(os.path.abspath(script_dir))
-        import cline_analysis as ca
-
-        self.mr_zs, self.mrs_zs, self.p_zs, self.q_zs = ca.get_migr_rate(x1, x2, y1, y2, dt_years, 0)
-
-        # Smooth the migration rates
-        self.mr_zs_sm = signal.savgol_filter(self.mr_zs, window_length=window,
-                                             polyorder=3, mode='interp')
-
-        # Set cutoff-affected and erodibility-affected bends to NaN
-        self.mr_zs_nan = self.mr_zs.copy()
-        self.mr_zs_sm_nan = self.mr_zs_sm.copy()
-        if hasattr(self, 'cut_ids'):
-            for c in self.cut_ids:
-                self.mr_zs_nan[self.infs_os[c]:self.infs_os[c+1]] = np.nan
-                self.mr_zs_sm_nan[self.infs_os[c]:self.infs_os[c+1]] = np.nan
-
-        if hasattr(self, 'erode_ids'):
-            for e in self.erode_ids:
-                self.mr_zs_nan[self.infs_os[e]:self.infs_os[e+1]] = np.nan
-                self.mr_zs_sm_nan[self.infs_os[e]:self.infs_os[e+1]] = np.nan
+        raise RuntimeError(
+            'mig_rate_zs is retired: it depended on the unbundled '
+            'curvaturepy package at a hardcoded personal-machine path and '
+            'could not run anywhere. Use mig_rate_transect_matching for '
+            'migration rates from matching transects.')
 
 
     def plot(self, x=None, y=None):

@@ -796,6 +796,12 @@ def junction_angles(links, nodes, imshape, pixlen, weight=None):
     if 'certain' not in links.keys():
         raise KeyError('Cannot compute junction angles until link flow directions have been computed.')
 
+    # The docstring documents 'lin'; map it onto the implemented 'linear'
+    # so both spellings select weighted angles instead of falling through
+    # with no weights assigned.
+    if weight == 'lin':
+        weight = 'linear'
+
     width_mult = 1.1  # minimum length of link required to use trimmed link for computing angle
     min_linklen = 5  # minimum number of pixels required in a link to compute its angle
     link_vector_length = 1  # (units of link widths) when determining the link's direction, how far along it should we consider?
