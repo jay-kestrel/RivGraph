@@ -192,7 +192,7 @@ class rivnetwork:
         if hasattr(self, 'Iskel') is False:
             self.skeletonize()
 
-        logger.info('Resolving links and nodes...', end='')
+        logger.info('Resolving links and nodes...')
 
         self.links, self.nodes = m2g.skel_to_graph(self.Iskel)
         self.links, self.nodes = lnu.mark_network_ids_provisional(
@@ -212,7 +212,7 @@ class rivnetwork:
             os.path.isfile(self.paths['Idist']) is True:
             self.Idist = rasters.open_raster(self.paths['Idist']).array
         else:
-            logger.info('Computing distance transform...', end='')
+            logger.info('Computing distance transform...')
 
             self.Idist = distance_transform_edt(self.Imask)
 
