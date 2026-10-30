@@ -152,3 +152,56 @@ def test_delta_colville_scaling_rows(tmp_path):
         assert row["seconds"] > 0
         assert row["pixels_per_s"] > 0
         assert row["n_skeleton_pixels"] > 0
+
+
+# -- River and vessel family: full-pipeline runs (Blueprint rows 5, 6, and 8).
+# In-process runs through the public API; timing fields are the only thing
+# they leave unasserted.
+
+
+@pytest.mark.slow
+def test_river_brahmaputra_full_end_to_end(tmp_path):
+    runner.discover_scenario_modules()
+    spec = runner.SCENARIOS["river_brahmaputra_full"]
+    result = runner.run_scenario(spec, tmp_path)
+    assert result.status == "ok", result.error
+    outputs = result.outputs
+    for key in ("n_links", "n_nodes", "total_channel_length_px",
+                "n_inlets", "n_outlets"):
+        assert outputs[key] > 0
+    # The record shows the centerline and mesh the direction-setting ran on.
+    assert outputs["centerline_length_px"] > 0
+    assert outputs["n_meshlines"] > 0
+    assert outputs["n_meshpolys"] > 0
+
+
+@pytest.mark.slow
+def test_river_brahmaputra_mesh_sensitivity(tmp_path):
+    runner.discover_scenario_modules()
+    spec = runner.SCENARIOS["river_brahmaputra_mesh"]
+    result = runner.run_scenario(spec, tmp_path)
+    assert result.status == "ok", result.error
+    rows = result.outputs["mesh_rows"]
+    assert result.outputs["n_spacings"] == 2
+    assert [row["spacing_factor"] for row in rows] == [1.0, 2.0]
+    assert rows[1]["grid_spacing"] == 2 * rows[0]["grid_spacing"]
+    for row in rows:
+        assert row["seconds"] > 0
+        assert row["n_meshlines"] > 0
+        assert row["n_meshpolys"] > 0
+
+
+@pytest.mark.slow
+def test_brain_vessel_network_links(tmp_path):
+    runner.discover_scenario_modules()
+    spec = runner.SCENARIOS["brain_vessel_network"]
+    result = runner.run_scenario(spec, tmp_path)
+    assert result.status == "ok", result.error
+    outputs = result.outputs
+    assert outputs["n_links"] > 0
+    assert outputs["n_nodes"] > 0
+    assert outputs["total_channel_length_px"] > 0
+    diagonal_px = (
+        result.dataset["rows"] ** 2 + result.dataset["cols"] ** 2
+    ) ** 0.5
+    assert 0 < outputs["width_mean_px"] <= diagonal_px

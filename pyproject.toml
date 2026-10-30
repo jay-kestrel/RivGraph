@@ -109,6 +109,17 @@ filterwarnings = [
   # array-to-scalar conversion); cleanup is tracked separately from logging.
   "ignore:`in1d` is deprecated:DeprecationWarning",
   "ignore:Conversion of an array with ndim > 0 to a scalar:DeprecationWarning",
+  # The mouse-brain vessel dataset is an un-georeferenced PNG by design:
+  # rasterio falls back to the identity geotransform and RivGraph assigns
+  # default georeferencing (documented in examples/mouse_brain_example.py),
+  # so the notice is expected on every vessel-scenario run.
+  "ignore:Dataset has no geotransform:UserWarning:rasterio.*",
+  # RivGraph composes Affine objects with `*` on purpose: `@` is unavailable
+  # in the supported affine>=2.3,<3 range and changes composition semantics.
+  # Newer affine releases deprecate `*` regardless of version pin, so this
+  # environmental warning is exempted by message + category (it fires from
+  # rivgraph.mask_utils call sites, so no module filter applies).
+  "ignore:Use `@` matmul instead of `\\*` mul operator:PendingDeprecationWarning",
 ]
 
 markers = [
