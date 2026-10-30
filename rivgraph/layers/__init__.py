@@ -21,6 +21,12 @@ from rivgraph.layers.core import (
     channel_view,
     validate_multiplex,
 )
+from rivgraph.layers.io import (
+    multiplex_from_node_link_data,
+    multiplex_to_node_link_data,
+    read_multiplex_json,
+    write_multiplex_json,
+)
 
 __all__ = [
     'EdgeType',
@@ -29,5 +35,9 @@ __all__ = [
     'add_landscape_layer',
     'build_multiplex',
     'channel_view',
+    'multiplex_from_node_link_data',
+    'multiplex_to_node_link_data',
+    'read_multiplex_json',
     'validate_multiplex',
+    'write_multiplex_json',
 ]

@@ -293,13 +293,56 @@ def cmd_demo(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_export_multiplex(args: argparse.Namespace) -> int:
+    """Export a multiplex graph to canonical node-link JSON.
+
+    Reads a node-link JSON document (as written by
+    ``rivgraph.layers.io.write_multiplex_json``), validates the multiplex
+    contract on import, and writes the canonical export either to ``--out``
+    or to stdout.
+    """
+    # Lazy import: networkx and the layers package stay out of cli.py's
+    # module-import time (see the import-cleanliness note in the module
+    # docstring).
+    from rivgraph.layers.io import (
+        multiplex_to_node_link_data,
+        read_multiplex_json,
+        write_multiplex_json,
+    )
+
+    in_path = Path(args.input)
+    if not in_path.is_file():
+        print(f'Error: no such file: {in_path}', file=sys.stderr)
+        return 1
+
+    try:
+        multiplex = read_multiplex_json(in_path)
+    except (ValueError, OSError) as exc:
+        print(
+            f'Error: could not read multiplex from {in_path}: {exc}',
+            file=sys.stderr,
+        )
+        return 1
+
+    try:
+        if args.out is not None:
+            write_multiplex_json(multiplex, args.out)
+            print(f'Wrote multiplex node-link JSON: {args.out}')
+        else:
+            print(json.dumps(multiplex_to_node_link_data(multiplex), indent=2))
+    except (ValueError, OSError) as exc:
+        print(f'Error: could not write multiplex JSON: {exc}', file=sys.stderr)
+        return 1
+    return 0
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog='rivgraph',
         description=(
             'Housekeeping CLI for RivGraph: environment reporting, mask '
-            'pre-flight inspection, and a deterministic demo. Run '
-            '`rivgraph <command> --help` for command details.'
+            'pre-flight inspection, a deterministic demo, and multiplex '
+            'graph export. Run `rivgraph <command> --help` for command details.'
         ),
     )
     subparsers = parser.add_subparsers(dest='command', required=True)
@@ -338,6 +381,21 @@ def _build_parser() -> argparse.ArgumentParser:
         help='optional directory for demo_mask.tif and demo_skeleton.tif',
     )
     p_demo.set_defaults(func=cmd_demo)
+
+    p_export = subparsers.add_parser(
+        'export-multiplex',
+        help='export a multiplex graph to canonical node-link JSON',
+    )
+    p_export.add_argument(
+        'input',
+        help='path to a node-link JSON document of a multiplex graph',
+    )
+    p_export.add_argument(
+        '-o', '--out',
+        default=None,
+        help='output path for the canonical JSON (default: print to stdout)',
+    )
+    p_export.set_defaults(func=cmd_export_multiplex)
 
     return parser
 
