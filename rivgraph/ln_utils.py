@@ -527,13 +527,14 @@ def _link_widths_native(links, Idt, pixlen):
         float(pixlen))
 
     # max() stays on the Python side so result types match the reference path
-    # exactly (max(pixlen, value) can be the raw int/float pixlen).
+    # exactly; float(pixlen) keeps the values' floating dtype when pixlen
+    # wins (the reference path casts the same way).
     links['wid_pix'] = list(native['wid_pix'])
-    links['len'] = [max(pixlen, v) for v in native['len']]
-    links['wid'] = [max(pixlen, v) for v in native['wid']]
-    links['wid_adj'] = [max(pixlen, v) for v in native['wid_adj']]
+    links['len'] = [max(float(pixlen), v) for v in native['len']]
+    links['wid'] = [max(float(pixlen), v) for v in native['wid']]
+    links['wid_adj'] = [max(float(pixlen), v) for v in native['wid_adj']]
     links['wid_med'] = list(native['wid_med'])
-    links['len_adj'] = [max(pixlen, v) for v in native['len_adj']]
+    links['len_adj'] = [max(float(pixlen), v) for v in native['len_adj']]
     links['sinuosity'] = list(native['sinuosity'])
     return links
 
