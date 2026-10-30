@@ -1,0 +1,657 @@
+{
+    "machine_info": {
+        "node": "e2b.local",
+        "processor": "",
+        "machine": "x86_64",
+        "python_compiler": "GCC 14.2.0",
+        "python_implementation": "CPython",
+        "python_implementation_version": "3.13.14",
+        "python_version": "3.13.14",
+        "python_build": [
+            "main",
+            "Jul 14 2026 04:45:36"
+        ],
+        "release": "6.1.158+",
+        "system": "Linux",
+        "cpu": {
+            "python_version": "3.13.14.final.0 (64 bit)",
+            "cpuinfo_version": [
+                10,
+                1,
+                1
+            ],
+            "cpuinfo_version_string": "10.1.1",
+            "arch": "X86_64",
+            "bits": 64,
+            "count": 8,
+            "arch_string_raw": "x86_64",
+            "vendor_id_raw": "GenuineIntel",
+            "brand_raw": "Intel(R) Xeon(R) Processor @ 2.60GHz",
+            "hz_advertised_friendly": "2.6000 GHz",
+            "hz_actual_friendly": "2.6000 GHz",
+            "hz_advertised": [
+                2600000000,
+                0
+            ],
+            "hz_actual": [
+                2600012000,
+                0
+            ],
+            "stepping": 6,
+            "model": 106,
+            "family": 6,
+            "flags": [
+                "3dnowprefetch",
+                "abm",
+                "adx",
+                "aes",
+                "apic",
+                "arat",
+                "arch_capabilities",
+                "avx",
+                "avx2",
+                "avx512_bitalg",
+                "avx512_vbmi2",
+                "avx512_vnni",
+                "avx512_vpopcntdq",
+                "avx512bitalg",
+                "avx512bw",
+                "avx512cd",
+                "avx512dq",
+                "avx512f",
+                "avx512ifma",
+                "avx512vbmi",
+                "avx512vbmi2",
+                "avx512vl",
+                "avx512vnni",
+                "avx512vpopcntdq",
+                "bmi1",
+                "bmi2",
+                "clflush",
+                "clflushopt",
+                "clwb",
+                "cmov",
+                "constant_tsc",
+                "cpuid",
+                "cpuid_fault",
+                "cx16",
+                "cx8",
+                "de",
+                "erms",
+                "f16c",
+                "fma",
+                "fpu",
+                "fsgsbase",
+                "fsrm",
+                "fxsr",
+                "gfni",
+                "hle",
+                "ht",
+                "hypervisor",
+                "ibpb",
+                "ibrs",
+                "ibrs_enhanced",
+                "invpcid",
+                "invpcid_single",
+                "lahf_lm",
+                "lm",
+                "mca",
+                "mce",
+                "md_clear",
+                "mmx",
+                "movbe",
+                "msr",
+                "mtrr",
+                "nonstop_tsc",
+                "nopl",
+                "nx",
+                "osxsave",
+                "pae",
+                "pat",
+                "pcid",
+                "pclmulqdq",
+                "pdpe1gb",
+                "pge",
+                "pni",
+                "popcnt",
+                "pse",
+                "pse36",
+                "rdpid",
+                "rdrand",
+                "rdrnd",
+                "rdseed",
+                "rdtscp",
+                "rep_good",
+                "rtm",
+                "sep",
+                "sha",
+                "sha_ni",
+                "smap",
+                "smep",
+                "ss",
+                "ssbd",
+                "sse",
+                "sse2",
+                "sse4_1",
+                "sse4_2",
+                "ssse3",
+                "stibp",
+                "syscall",
+                "tsc",
+                "tsc_adjust",
+                "tsc_deadline_timer",
+                "tsc_known_freq",
+                "tscdeadline",
+                "umip",
+                "vaes",
+                "vme",
+                "vmx",
+                "vpclmulqdq",
+                "x2apic",
+                "xgetbv1",
+                "xsave",
+                "xsavec",
+                "xsaveopt",
+                "xsaves",
+                "xtopology"
+            ],
+            "l3_cache_size": 56623104,
+            "l2_cache_size": 5242880,
+            "l1_data_cache_size": 196608,
+            "l1_instruction_cache_size": 131072,
+            "l2_cache_line_size": 256,
+            "l2_cache_associativity": 6
+        }
+    },
+    "commit_info": {
+        "id": "ac9dd9b33b43cb9da9c0118654f43785cb861793",
+        "time": "2026-10-30T22:48:50Z",
+        "author_time": "2026-10-30T22:48:50Z",
+        "dirty": false,
+        "project": "RivGraph",
+        "branch": "task/rivgraph-julia-skeleton-walker-widths-1CupRBew"
+    },
+    "benchmarks": [
+        {
+            "group": null,
+            "name": "test_benchmark_cycle_search[repairable-python]",
+            "fullname": "bench/test_benchmark_directionality.py::test_benchmark_cycle_search[repairable-python]",
+            "params": {
+                "closed": false,
+                "backend": "0"
+            },
+            "param": "repairable-python",
+            "extra_info": {
+                "backend": "0",
+                "edges": [
+                    [
+                        0,
+                        1
+                    ],
+                    [
+                        1,
+                        2
+                    ],
+                    [
+                        2,
+                        3
+                    ],
+                    [
+                        3,
+                        4
+                    ],
+                    [
+                        4,
+                        5
+                    ],
+                    [
+                        5,
+                        6
+                    ],
+                    [
+                        6,
+                        7
+                    ],
+                    [
+                        7,
+                        8
+                    ],
+                    [
+                        8,
+                        9
+                    ],
+                    [
+                        9,
+                        0
+                    ],
+                    [
+                        10,
+                        0
+                    ],
+                    [
+                        9,
+                        11
+                    ]
+                ],
+                "candidates": [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9
+                ]
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.00018311299936613068,
+                "max": 0.0002378959998168284,
+                "mean": 0.00020168429991826998,
+                "stddev": 1.719449550219125e-05,
+                "rounds": 20,
+                "median": 0.00019554299979063217,
+                "iqr": 2.7368999781174352e-05,
+                "q1": 0.00018874550005421042,
+                "q3": 0.00021611449983538478,
+                "iqr_outliers": 0,
+                "stddev_outliers": 6,
+                "outliers": "6;0",
+                "ld15iqr": 0.00018311299936613068,
+                "hd15iqr": 0.0002378959998168284,
+                "ops": 4958.244148926007,
+                "total": 0.004033685998365399,
+                "data": [
+                    0.0002378959998168284,
+                    0.00022126299973024288,
+                    0.00019474999953672523,
+                    0.00023176800004875986,
+                    0.00019423799949436216,
+                    0.00018776799970510183,
+                    0.00019731300017156173,
+                    0.0001868250001280103,
+                    0.0002137060000677593,
+                    0.00019219800014980137,
+                    0.00019088200042460812,
+                    0.00022845300009066705,
+                    0.00018313199961994542,
+                    0.0001963360000445391,
+                    0.0001861099999587168,
+                    0.0002029450006375555,
+                    0.00019674399936775444,
+                    0.00018311299936613068,
+                    0.00021852299960301025,
+                    0.00018972300040331902
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_benchmark_cycle_search[no-terminals-python]",
+            "fullname": "bench/test_benchmark_directionality.py::test_benchmark_cycle_search[no-terminals-python]",
+            "params": {
+                "closed": true,
+                "backend": "0"
+            },
+            "param": "no-terminals-python",
+            "extra_info": {
+                "backend": "0",
+                "edges": [
+                    [
+                        0,
+                        1
+                    ],
+                    [
+                        1,
+                        2
+                    ],
+                    [
+                        2,
+                        3
+                    ],
+                    [
+                        3,
+                        4
+                    ],
+                    [
+                        4,
+                        5
+                    ],
+                    [
+                        5,
+                        6
+                    ],
+                    [
+                        6,
+                        7
+                    ],
+                    [
+                        7,
+                        8
+                    ],
+                    [
+                        8,
+                        9
+                    ],
+                    [
+                        9,
+                        0
+                    ]
+                ],
+                "candidates": [
+                    0,
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9
+                ]
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 0.013649718000124267,
+                "max": 0.01620066399937059,
+                "mean": 0.014755919399976846,
+                "stddev": 0.0008581948499319722,
+                "rounds": 20,
+                "median": 0.014622312499341206,
+                "iqr": 0.0015547425000477233,
+                "q1": 0.014033186500000738,
+                "q3": 0.015587929000048462,
+                "iqr_outliers": 0,
+                "stddev_outliers": 9,
+                "outliers": "9;0",
+                "ld15iqr": 0.013649718000124267,
+                "hd15iqr": 0.01620066399937059,
+                "ops": 67.76941327028183,
+                "total": 0.29511838799953694,
+                "data": [
+                    0.015560324999569275,
+                    0.0155128340002193,
+                    0.014130309999927704,
+                    0.01620066399937059,
+                    0.015883111000221106,
+                    0.015615533000527648,
+                    0.01609054799973819,
+                    0.014615833999414463,
+                    0.013649718000124267,
+                    0.013936063000073773,
+                    0.014628790999267949,
+                    0.014667580000605085,
+                    0.014981240999986767,
+                    0.015617762000147195,
+                    0.013780038999357203,
+                    0.013841138999850955,
+                    0.01417399700039823,
+                    0.013666955000189773,
+                    0.014354029000060109,
+                    0.014211915000487352
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_benchmark_skel_to_graph",
+            "fullname": "bench/test_benchmark_rivgraph.py::test_benchmark_skel_to_graph",
+            "params": null,
+            "param": null,
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 3.7260349689995564,
+                "max": 3.922111435000261,
+                "mean": 3.8041665403998195,
+                "stddev": 0.08284507295839032,
+                "rounds": 5,
+                "median": 3.7976811929993346,
+                "iqr": 0.13674185024979124,
+                "q1": 3.728274289750061,
+                "q3": 3.8650161399998524,
+                "iqr_outliers": 0,
+                "stddev_outliers": 1,
+                "outliers": "1;0",
+                "ld15iqr": 3.7260349689995564,
+                "hd15iqr": 3.922111435000261,
+                "ops": 0.2628696691851192,
+                "total": 19.020832701999097,
+                "data": [
+                    3.7976811929993346,
+                    3.7260349689995564,
+                    3.922111435000261,
+                    3.8459843749997162,
+                    3.7290207300002294
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_benchmark_link_widths_and_lengths",
+            "fullname": "bench/test_benchmark_rivgraph.py::test_benchmark_link_widths_and_lengths",
+            "params": null,
+            "param": null,
+            "extra_info": {},
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 1.5200416890002089,
+                "max": 1.5670634529997187,
+                "mean": 1.543433267600267,
+                "stddev": 0.016977000837868413,
+                "rounds": 5,
+                "median": 1.5452748630004862,
+                "iqr": 0.018610254249551872,
+                "q1": 1.5333778905005602,
+                "q3": 1.551988144750112,
+                "iqr_outliers": 0,
+                "stddev_outliers": 2,
+                "outliers": "2;0",
+                "ld15iqr": 1.5200416890002089,
+                "hd15iqr": 1.5670634529997187,
+                "ops": 0.6479062107782619,
+                "total": 7.717166338001334,
+                "data": [
+                    1.5452748630004862,
+                    1.5469630420002431,
+                    1.5378232910006773,
+                    1.5200416890002089,
+                    1.5670634529997187
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_benchmark_brahmaputra_walker[python]",
+            "fullname": "bench/test_benchmark_rivgraph.py::test_benchmark_brahmaputra_walker[python]",
+            "params": {
+                "backend": "python"
+            },
+            "param": "python",
+            "extra_info": {
+                "backend": "python"
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 8.693663713000205,
+                "max": 9.06417728299948,
+                "mean": 8.803326644599839,
+                "stddev": 0.15369535208145033,
+                "rounds": 5,
+                "median": 8.743539338000119,
+                "iqr": 0.1792427897496509,
+                "q1": 8.698328562999905,
+                "q3": 8.877571352749555,
+                "iqr_outliers": 0,
+                "stddev_outliers": 1,
+                "outliers": "1;0",
+                "ld15iqr": 8.693663713000205,
+                "hd15iqr": 9.06417728299948,
+                "ops": 0.1135934221654064,
+                "total": 44.01663322299919,
+                "data": [
+                    8.743539338000119,
+                    8.81536937599958,
+                    8.693663713000205,
+                    9.06417728299948,
+                    8.699883512999804
+                ],
+                "iterations": 1
+            }
+        },
+        {
+            "group": null,
+            "name": "test_benchmark_brahmaputra_widths[python]",
+            "fullname": "bench/test_benchmark_rivgraph.py::test_benchmark_brahmaputra_widths[python]",
+            "params": {
+                "backend": "python"
+            },
+            "param": "python",
+            "extra_info": {
+                "backend": "python"
+            },
+            "options": {
+                "disable_gc": false,
+                "timer": "perf_counter",
+                "min_rounds": 5,
+                "max_time": 1.0,
+                "min_time": 5e-06,
+                "precision": null,
+                "confidence": null,
+                "warmup": false
+            },
+            "stats": {
+                "min": 6.222707583000556,
+                "max": 6.736931039999945,
+                "mean": 6.41138886100016,
+                "stddev": 0.19624823711950048,
+                "rounds": 5,
+                "median": 6.382348030000685,
+                "iqr": 0.20946688274966618,
+                "q1": 6.283330506000084,
+                "q3": 6.49279738874975,
+                "iqr_outliers": 0,
+                "stddev_outliers": 1,
+                "outliers": "1;0",
+                "ld15iqr": 6.222707583000556,
+                "hd15iqr": 6.736931039999945,
+                "ops": 0.1559724455465337,
+                "total": 32.0569443050008,
+                "data": [
+                    6.222707583000556,
+                    6.736931039999945,
+                    6.3035381469999265,
+                    6.411419504999685,
+                    6.382348030000685
+                ],
+                "iterations": 1
+            }
+        }
+    ],
+    "datetime": "2026-10-30T22:53:38.795136+00:00",
+    "version": "5.3.0",
+    "rivgraph_bench_env": {
+        "python": "3.13.14",
+        "platform": "Linux-6.1.158+-x86_64-with-glibc2.41",
+        "machine": "x86_64",
+        "cpus": 8,
+        "packages": {
+            "rivgraph": "not installed",
+            "numpy": "2.3.5",
+            "scipy": "1.17.1",
+            "networkx": "3.6.1",
+            "scikit-image": "0.25.2",
+            "rasterio": "1.5.2",
+            "pytest": "9.0.3",
+            "pytest-benchmark": "5.3.0"
+        },
+        "inputs": {
+            "mask": {
+                "path": "examples/data/Colville_Delta/Colville_mask.tif",
+                "sha256": "e0c2221be98e300f9b1fc055bb88efc655705a58edfb1cae0be988f366f479ab",
+                "bytes": 2375971
+            },
+            "shoreline": {
+                "path": "examples/data/Colville_Delta/Colville_shoreline.shp",
+                "sha256": "2768019b1d3cd8e8e8b758dd04b97a56ef2d9cd6d4cd864238bfe9c930928648",
+                "bytes": 620
+            },
+            "inlet_nodes": {
+                "path": "examples/data/Colville_Delta/Colville_inlet_nodes.shp",
+                "sha256": "5048a068be12aa0b1290897b56c57e24227da17d584ebeb3aa9c14e069523726",
+                "bytes": 156
+            },
+            "brahmaputra_mask": {
+                "path": "examples/data/Brahmaputra_Braided_River/Brahmaputra_mask.tif",
+                "sha256": "55b934de85ceaee1208905cead5bada857b6a8ad71473e074e6f4d89049a8022",
+                "bytes": 4835160
+            }
+        },
+        "workload": {
+            "skeleton_pixels": 23698,
+            "post_prune_links": 246,
+            "post_prune_nodes": 180,
+            "inlets": 2,
+            "outlets": 23,
+            "brahmaputra_shape": [
+                4198,
+                1150
+            ],
+            "brahmaputra_skeleton_pixels": 41742,
+            "brahmaputra_width_links": 2339
+        }
+    }
+}

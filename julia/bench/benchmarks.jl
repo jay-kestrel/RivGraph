@@ -34,6 +34,18 @@ function sha256_file(path)
     return bytes2hex(SHA.digest!(h))
 end
 
+intvec(xs) = Int[x for x in xs]
+intvecvec(xs) = Vector{Int}[intvec(row) for row in xs]
+
+function links_from_ser(v::AbstractDict{String,Any})
+    vals = v["values"]
+    links = Links()
+    links.idx = intvecvec(vals["idx"])
+    links.conn = intvecvec(vals["conn"])
+    links.id = OrderedSet{Int64}(intvec(vals["id"]))
+    return links
+end
+
 function main()
     manifest = JSON.parsefile(joinpath(FIX, "manifest.json"))
     inputs = manifest["inputs"]
@@ -78,7 +90,7 @@ function main()
     artifact = Dict(
         "rivgraph_julia_bench_env" => Dict(
             "julia" => string(VERSION),
-            "platform" => string(Sys.kernel_description()),
+            "platform" => string(Sys.KERNEL, "-", Sys.ARCH),
             "machine" => string(Sys.ARCH),
             "cpus" => Sys.cpu_info() |> length,
             "rounds" => 5,
