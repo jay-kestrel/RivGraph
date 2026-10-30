@@ -90,6 +90,21 @@ The paired Brahmaputra benchmark uses the same staged skeleton for both
 backends, with one warm-up and five measured rounds per backend. Versions,
 checksums, medians and minima are included in the benchmark output.
 
+## Demo scenarios
+
+The [`scenarios/`](scenarios/) package runs RivGraph end to end on the four committed example datasets and reports what each run did and what it cost. Each named scenario drives the public `delta`/`river` workflows through explicit phases and emits one structured record per run: per-phase wall time, throughput, cumulative peak RSS, and the processed data (links, nodes, channel lengths, widths, islands, fluxes — whichever the scenario produces).
+
+```bash
+python -m scenarios --list                # the catalog: name + one-line description
+python -m scenarios --quick               # fast, CI-safe subset
+python -m scenarios --only delta_colville_full river_brahmaputra_full
+python -m scenarios                       # the whole catalog
+```
+
+Every run writes `scenario_results.json` (machine-readable, one record per scenario) and `SCENARIOS.md` (human summary) into `scenarios_results/`. The suite is pytest-executable (`tests/test_scenarios.py`): the quick subset guards CI, records are contract-tested, and full pipelines run under the `slow` marker. The `scenarios.yml` workflow runs the quick subset on master and publishes both reports for each run — see the [demo scenarios documentation page](docs/source/scenarios/index.rst) for the catalog and record schema.
+
+Prefer [`bench/`](bench/) when you need stage-level micro-benchmarks instead: it times three hot stages (`skel_to_graph`, `link_widths_and_lengths`, `assign_flow_directions`) with pytest-benchmark's statistical rounds, which is what you want when optimizing one stage. Reach for the scenarios when you want the end-to-end story — what a whole workflow processed and what it cost.
+
 ## Output and logging
 
 RivGraph logs through [loguru](https://loguru.readthedocs.io); library code never uses `print()`.
