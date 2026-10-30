@@ -320,9 +320,11 @@ def test_compute_eBI_raises_when_all_intersecting_widths_zero(tmp_path):
     links_gdf = gpd.GeoDataFrame(
         {'wid_adj': [0.0]},
         geometry=[LineString([(0, 0), (10, 0)])],
+        crs='EPSG:4326',
     )
     mesh_gdf = gpd.GeoDataFrame(
         geometry=[LineString([(5, -1), (5, 1)])],
+        crs='EPSG:4326',
     )
     links_f = tmp_path / 'links.shp'
     mesh_f = tmp_path / 'mesh.shp'
