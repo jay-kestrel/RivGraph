@@ -1,5 +1,34 @@
 # Changelog
 
+## Unreleased
+
+Changes carried by this fork ahead of the next release. The versions below
+summarize upstream history.
+
+### Added
+
+- Rust native skeleton walker: `mask_to_graph.skel_to_graph` dispatches to a
+  compiled `rivgraph._native` extension (PyO3 + rust-numpy, built by maturin)
+  with exact Python parity (#3). The Python reference walker remains available
+  via `PYDELTARCM_NATIVE=0`.
+- `rivgraph` command-line interface with `env`, `inspect`, and `demo`
+  subcommands, also runnable as `python -m rivgraph` (#6).
+- pytest-benchmark harness covering the walker, link widths, and flow
+  directionality on the committed Colville inputs, plus a paired-backend
+  Brahmaputra walker benchmark (#1).
+
+### Changed
+
+- Backend selection is re-evaluated on every `skel_to_graph` call; a missing or
+  broken native extension raises its import error instead of silently falling
+  back to the Python reference (#3).
+
+### Fixed
+
+- core graph walk and directionality defects (#4)
+- `im_utils` skeleton curvature walk, branchpoint indexing, and uint16 casts (#2)
+- geo/raster/IO error handling, unit parsing, and downsample registration (#5)
+
 ## Version 1.0
 
 RivGraph v1 is a major modernization release focused on a cleaner geospatial stack, stronger testing and export contracts, and a more maintainable codebase.
