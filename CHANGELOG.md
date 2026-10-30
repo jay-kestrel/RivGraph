@@ -16,6 +16,14 @@ summarize upstream history.
 - pytest-benchmark harness covering the walker, link widths, and flow
   directionality on the committed Colville inputs, plus a paired-backend
   Brahmaputra walker benchmark (#1).
+- `ruff` lint workflow (`.github/workflows/lint.yml`) pinning ruff 0.17.3
+  with inline checkout steps per the repository's Actions allow-list, plus a
+  repository lint configuration (E4/E7/E9/F with per-file exemptions for
+  files carrying pre-existing violations)
+- seedable nER: `delta_nER` and `compute_delta_metrics` accept a `seed`
+  (int, `numpy.random.Generator`, or None) for the flux randomizations,
+  defaulting to a fixed seed so repeated calls on the same network return
+  identical statistics
 
 ### Changed
 
@@ -26,6 +34,11 @@ summarize upstream history.
   walker traces at `debug`, swallowed exceptions gain `debug` records with
   exception context, and tests capture output via capsys plus a loguru
   fixture instead of stdout hand-swaps (#7)
+- river `set_directionality` leaves links that no algorithm evaluated at
+  `certain = 0` with a warning that matches the behavior; they were
+  previously warned as "randomly set" (nothing was set) and then promoted
+  to `certain = 1`, making arbitrary orientations indistinguishable from
+  verified ones downstream
 
 ### Fixed
 
@@ -40,6 +53,25 @@ summarize upstream history.
   allowlisted only the built-in containers, OrderedDict, OrderedSet, and
   numpy array/dtype machinery; superseded by the JSON persistence above (#11,
   see #9)
+- `junction_angles` accepts the docstring-documented `weight='lin'`
+  (previously it fell through both weight branches and silently computed
+  unweighted angles)
+- `get_islands` no longer mutates its `props` default list or
+  caller-provided lists; repeated calls keep the documented default
+- `infsC` computes the curvature array before locating inflection points
+  (the `hasattr(self, 'C')` guard was always true and passed the bound
+  method itself, crashing on subscripting)
+- `compute_eBI` raises the advertised `RuntimeError` when a transect
+  intersects only links of width 0 (previously it silently returned
+  eBI = 2**NaN = 1)
+
+### Removed
+
+- `centerline.mig_rate_zs` is retired with an explanatory `RuntimeError`:
+  it resolved an unbundled package through a hardcoded personal Windows
+  path and crashed on every machine. Use `mig_rate_transect_matching`
+  (manual-transect matching) for migration rates instead.
+
 
 ## Version 1.0
 

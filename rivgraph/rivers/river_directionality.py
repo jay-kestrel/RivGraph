@@ -21,6 +21,39 @@ import rivgraph.geo_utils as gu
 import rivgraph.directionality as dy
 
 
+def mark_unresolved_links(links):
+    """
+    Keep links whose direction was never determined explicitly uncertain.
+
+    Called at the end of :func:`set_directionality`: links that no algorithm
+    evaluated keep ``certain == 0`` so downstream consumers (continuity
+    checks, exports) can distinguish resolved orientations from unresolved
+    ones. The previous behavior warned that remaining links "were randomly
+    set" while actually setting nothing, then promoted every link to
+    ``certain == 1`` -- making arbitrary orientations indistinguishable
+    from verified ones.
+
+    Parameters
+    ----------
+    links : dict
+        Network links with directionality trackers attached.
+
+    Returns
+    -------
+    links : dict
+        The same links dict; unresolved links keep ``certain == 0``.
+
+    """
+    n_unset = int(np.sum(np.asarray(links['certain']) == 0))
+    if n_unset > 0:
+        logger.warning(
+            '{} links could not be set by any algorithm and remain '
+            'uncertain (certain=0); their orientation is unresolved.'
+            .format(n_unset))
+    return links
+
+
+
 def set_directionality(links, nodes, Imask, exit_sides, gt, meshlines,
                        meshpolys, Idt, pixlen, manual_set_csv):
     """
@@ -152,11 +185,9 @@ def set_directionality(links, nodes, Imask, exit_sides, gt, meshlines,
         links, nodes = dy.set_by_known_flow_directions(links, nodes, imshape,
                                                        angthresh=a)
 
-    # At this point, if any links remain unset, they are just set randomly
-    if np.sum(links['certain']) != len(links['id']):
-        logger.warning('{} links were randomly set.'.format(len(links['id']) -
-                                                     np.sum(links['certain'])))
-        links['certain'] = np.ones((len(links['id']), 1))
+    # Links that remain unset were never evaluated by any algorithm; leave
+    # them explicitly uncertain rather than promoting them to certain.
+    links = mark_unresolved_links(links)
 
     # Check for and try to fix cycles in the graph
     links, nodes, cantfix_cyclelinks, cantfix_cyclenodes = fix_river_cycles(links, nodes, imshape)

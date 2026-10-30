@@ -92,9 +92,22 @@ def _normalize_requested_metric_names(metrics):
     return set(ordered)
 
 
-def _metric_specs(n_random=200):
+# Fixed default seed for the nER flux randomizations so that repeated calls
+# on the same network return identical statistics. seed=None opts out into
+# fresh OS-seeded randomness (the documented escape hatch).
+DEFAULT_NER_SEED = 42
+
+
+def _as_rng(seed):
+    """Return a ``np.random.Generator`` from an int seed, Generator, or None."""
+    if isinstance(seed, np.random.Generator):
+        return seed
+    return np.random.default_rng(seed)
+
+
+def _metric_specs(n_random=200, seed=DEFAULT_NER_SEED):
     return (
-        (("nonlin_entropy_rate", "nER_prob_exceedence", "nER_randomized"), delta_nER, {"N": n_random}),
+        (("nonlin_entropy_rate", "nER_prob_exceedence", "nER_randomized"), delta_nER, {"N": n_random, "seed": seed}),
         (("top_mutual_info", "top_conditional_entropy"), top_entropy_based_topo, {}),
         (("top_link_sharing_idx",), top_link_sharing_index, {}),
         (("n_alt_paths",), top_number_alternative_paths, {}),
@@ -107,10 +120,11 @@ def _metric_specs(n_random=200):
     )
 
 
-def _compute_selected_metrics(deltavars, *, metrics=None, n_random=200):
+def _compute_selected_metrics(deltavars, *, metrics=None, n_random=200,
+                              seed=DEFAULT_NER_SEED):
     selected_names = _normalize_requested_metric_names(metrics)
     outputs = {}
-    for output_names, func, kwargs in _metric_specs(n_random=n_random):
+    for output_names, func, kwargs in _metric_specs(n_random=n_random, seed=seed):
         if selected_names is not None and all(name not in selected_names for name in output_names):
             continue
         result = func(deltavars, **kwargs)
@@ -261,6 +275,7 @@ def compute_delta_metrics(
     inlet_weights=None,
     metrics=None,
     n_random=200,
+    seed=DEFAULT_NER_SEED,
     warn_experimental=True,
     return_intermediates=False,
 ):
@@ -287,6 +302,11 @@ def compute_delta_metrics(
         computed.
     n_random : int, optional
         Number of random trials used when computing ``nER_randomized``.
+    seed : int, numpy.random.Generator, or None, optional
+        Seed for the nER flux randomizations. Defaults to
+        :data:`DEFAULT_NER_SEED` so repeated calls return identical
+        statistics; pass a ``numpy.random.Generator`` to draw from an
+        existing stream, or ``None`` for fresh OS-seeded randomness.
     warn_experimental : bool, optional
         Emit a one-time warning that the delta metrics are experimental.
     return_intermediates : bool, optional
@@ -345,7 +365,8 @@ def compute_delta_metrics(
 
     deltavars = intermediate_vars(G)
     deltavars['metric_metadata'] = metric_metadata
-    metric_outputs = _compute_selected_metrics(deltavars, metrics=metrics, n_random=n_random)
+    metric_outputs = _compute_selected_metrics(deltavars, metrics=metrics,
+                                               n_random=n_random, seed=seed)
 
     if return_intermediates is True:
         return metric_outputs, deltavars
@@ -812,13 +833,27 @@ def nl_entropy_rate(A):
     return nER
 
 
-def delta_nER(deltavars, N=500):
+def delta_nER(deltavars, N=500, seed=DEFAULT_NER_SEED):
     """
     Compute nonlocal entropy rate.
 
     Compute the nonlocal entrop rate (nER) corresponding to the delta
     (including flux partition) represented by adjacency matrix A, and compares
     its value with the nER resulting from randomizing the flux partition.
+
+    Parameters
+    ----------
+    deltavars : dict
+        Intermediate variables containing the weighted adjacency matrix
+        (``A_w_trans``).
+    N : int, optional
+        Number of randomized flux partitions to compare against.
+    seed : int, numpy.random.Generator, or None, optional
+        Seed for the flux randomizations. Defaults to
+        :data:`DEFAULT_NER_SEED` so repeated calls on the same network
+        return identical statistics; pass a ``numpy.random.Generator`` to
+        draw from an existing stream, or ``None`` for fresh OS-seeded
+        randomness.
 
     Returns
     -------
@@ -836,11 +871,12 @@ def delta_nER(deltavars, N=500):
     A = deltavars['A_w_trans'].copy()
     nER_Delta = nl_entropy_rate(A)
 
+    rng = _as_rng(seed)
     nER_randA = []
     for i in range(N):
         A_rand = A.copy()
         I = np.where(A_rand > 0)
-        rand_weights = np.random.uniform(0, 1, (1, len(I[0])))
+        rand_weights = rng.uniform(0, 1, (1, len(I[0])))
         A_rand[I] = rand_weights
         A_rand = np.matmul(A_rand, np.linalg.pinv(np.diag(np.sum(A_rand, axis=0))))
         nER_randA.append(nl_entropy_rate(A_rand))

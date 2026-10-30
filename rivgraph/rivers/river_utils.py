@@ -952,9 +952,13 @@ def compute_eBI(path_meshlines, path_links, method='local'):
                     ws.append(ws_il[int_id])
 
         ws = np.array([w for w in ws if w > 0]) # Remove links of 0 width -- should determine why these are zero, probably due to computing widths on the original mask instead of the pre-processed one...
+        if ws.size == 0:
+            # Every intersecting link has width 0: all probabilities would be
+            # NaN and the `probs == 0` guard below cannot fire, silently
+            # producing eBI = 2**NaN = 1. Raise the error this branch was
+            # written to raise.
+            raise RuntimeError('Transect {} intersects only links of width 0.'.format(mi))
         probs = ws / np.sum(ws)
-        if any(probs == 0):
-            raise RuntimeError('Transect {} intersects a link of width 0.'.format(mi))
 
         H = -np.sum(probs*np.log2(probs))
         ebi_section = 2**H
