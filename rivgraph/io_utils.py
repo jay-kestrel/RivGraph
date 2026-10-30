@@ -202,10 +202,57 @@ def pickle_links_and_nodes(links, nodes, path_out):
         pickle.dump([links, nodes], f)
 
 
+class RestrictedUnpickler(pickle.Unpickler):
+    """Unpickler restricted to the globals legitimately found in network pickles.
+
+    Pickle files execute arbitrary code while being loaded, and network pickles
+    may point at user-supplied files, so every global is checked against an
+    allowlist before it is resolved. Anything outside the allowlist raises
+    :class:`pickle.UnpicklingError` instead of being imported or instantiated.
+    The allowlist covers exactly the primitive containers, OrderedDict,
+    OrderedSet, and numpy array/dtype machinery that
+    :func:`pickle_links_and_nodes` can write.
+    """
+
+    allowed_builtins = frozenset([
+        'bytes', 'complex', 'dict', 'float', 'frozenset', 'int', 'list',
+        'set', 'str', 'tuple',
+    ])
+
+    def find_class(self, module, name):
+        if module == 'builtins' and name in self.allowed_builtins:
+            return super().find_class(module, name)
+        if module == 'collections' and name == 'OrderedDict':
+            return super().find_class(module, name)
+        # Legacy pickles reference the top-level 'ordered_set' module, which
+        # unpickle_links_and_nodes aliases onto rivgraph.ordered_set.
+        if module in ('rivgraph.ordered_set', 'ordered_set') and name == 'OrderedSet':
+            return super().find_class(module, name)
+        # numpy arrays unpickle through either module path (numpy < 2 vs
+        # numpy >= 2); dtypes resolve via numpy.dtype or the numpy.dtypes
+        # descriptor classes.
+        if module in ('numpy.core.multiarray', 'numpy._core.multiarray') and name == '_reconstruct':
+            return super().find_class(module, name)
+        if module == 'numpy' and name in ('dtype', 'ndarray'):
+            return super().find_class(module, name)
+        if module == 'numpy.dtypes':
+            return super().find_class(module, name)
+        raise pickle.UnpicklingError(
+            "Refusing to unpickle {}.{}: loading network pickles is restricted "
+            "to built-in containers, OrderedDict, OrderedSet, and numpy "
+            "arrays/dtypes.".format(module, name)
+        )
+
+
 def unpickle_links_and_nodes(path_pickle):
     """
     Unpickles a previously pickled network. Note that ordered_set is reloaded
     within this function so that pickle can interpret OrderedSet object fields.
+
+    The pickle is loaded with a restricted unpickler that only resolves the
+    classes legitimately present in network pickles; any other global raises
+    pickle.UnpicklingError. Pickles execute arbitrary code while loading, so
+    untrusted network pickle files cannot smuggle in other imports.
 
     Parameters
     ----------
@@ -225,7 +272,7 @@ def unpickle_links_and_nodes(path_pickle):
     sys.modules['ordered_set'] = ordered_set
 
     with open(path_pickle, 'rb') as f:
-        links, nodes = pickle.load(f)
+        links, nodes = RestrictedUnpickler(f).load()
 
     return links, nodes
 
