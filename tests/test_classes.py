@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import re
 import unittest.mock as mock
 
 import numpy as np
@@ -120,6 +121,7 @@ class TestRivnetwork:
         results_folder = os.path.join(tmp_path, "results")
         network = rivnetwork(self.name, str(self.path_to_mask), results_folder)
         assert os.path.isfile(network.paths["log"]) is True
+        assert os.path.basename(network.paths["log"]) == "demo_log.log"
         # with verbose=False, nothing is printed to stdout
         assert capsys.readouterr().out == ""
 
@@ -128,4 +130,11 @@ class TestRivnetwork:
         results_folder = os.path.join(tmp_path, "results")
         network = rivnetwork(self.name, str(self.path_to_mask), results_folder, verbose=True)
         assert os.path.isfile(network.paths["log"]) is True
+        assert os.path.basename(network.paths["log"]) == "demo_log.log"
         assert capsys.readouterr().out == "---------- New Run ----------\n"
+        with open(network.paths["log"], encoding="utf-8") as f:
+            first_line = f.readline().rstrip("\n")
+        assert re.fullmatch(
+            r"\[\d{4}-\d{2}-\d{2} at \d{2}:\d{2}:\d{2}\] \| ---------- New Run ----------",
+            first_line,
+        )

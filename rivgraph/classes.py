@@ -5,6 +5,8 @@ RivGraph (classes.py)
 Classes for running rivgraph commands on your channel networks or centerlines.
 
 """
+import functools
+import itertools
 import os
 import sys
 from loguru import logger
@@ -30,8 +32,103 @@ import rivgraph.rivers.river_directionality as rd
 import rivgraph.rivers.river_utils as ru
 import rivgraph.rivers.centerline_utils as cu
 
+# Monotonic suffix for run ids: keeps them unique even when CPython reuses
+# the memory address (id) of an instance that was dropped without teardown.
+_INSTANCE_SEQ = itertools.count()
 
-class rivnetwork:
+
+class _InstanceLogging:
+    """Mixin owning this instance's loguru sinks, keyed by a run id.
+
+    The logging contract for every RivGraph class: a log file at
+    ``self.paths['log']`` is always written (DEBUG and up, timestamped
+    format), and when ``self.verbose`` is True a bare-message stdout sink
+    (INFO and up) is added. Instantiation never resets sinks owned by
+    others: sinks are added per instance and removed by handler id on
+    teardown. Module-level ``logger`` calls made inside public methods are
+    routed to the owning instance through ``logger.contextualize``.
+    """
+
+    def init_logger(self):
+        """Add this instance's log sinks, without touching anyone else's.
+
+        Loguru's pre-configured stderr handler (documented as handler id 0)
+        is removed, as it was under the previous process-wide configuration,
+        so records are never emitted twice in two different formats.
+        """
+        # Re-init on the same object must not orphan its previous sinks.
+        self._teardown_logging()
+
+        self._run_id = f"{type(self).__name__}:{id(self):x}:{next(_INSTANCE_SEQ)}"
+        self._handler_ids = []
+
+        try:
+            logger.remove(0)
+        except ValueError:
+            # Handler 0 is gone already, e.g. removed by the host or by a
+            # previously-constructed RivGraph object. Nothing to do.
+            pass
+
+        run_id = self._run_id
+
+        def accept_own_run(record):
+            return record['extra'].get('run') in (None, run_id)
+
+        # File sink: always written, full record (DEBUG and up).
+        self._handler_ids.append(
+            logger.add(self.paths['log'],
+                       format="[{time:YYYY-MM-DD at HH:mm:ss}] | {message}",
+                       level="DEBUG", filter=accept_own_run))
+
+        if self.verbose is True:
+            # Console sink: bare messages, INFO and up.
+            self._handler_ids.append(
+                logger.add(sys.stdout, format="{message}", level="INFO",
+                           filter=accept_own_run))
+
+        logger.bind(run=run_id).info("-"*10 + " New Run " + "-"*10)
+
+    def _teardown_logging(self):
+        """Remove this instance's sinks by handler id."""
+        for handler_id in getattr(self, '_handler_ids', []):
+            logger.remove(handler_id)
+        self._handler_ids = []
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self._teardown_logging()
+        return False
+
+
+def _routes_logging(method):
+    """Route records logged during this method to the instance's own sinks.
+
+    The method runs inside ``logger.contextualize`` so that module-level
+    ``logger`` calls executed here -- directly or in callees -- carry this
+    instance's run id, which its sinks filter on. Private helpers already
+    run inside their caller's context and need no wrapping.
+    """
+    @functools.wraps(method)
+    def wrapper(self, *args, **kwargs):
+        run_id = getattr(self, '_run_id', None)
+        if run_id is None:
+            # The object never configured logging -- e.g. built via __new__
+            # or unpickled, bypassing __init__. Run unattributed rather
+            # than crash; such records are accepted by every active sink.
+            return method(self, *args, **kwargs)
+        with logger.contextualize(run=run_id):
+            return method(self, *args, **kwargs)
+    # functools.wraps copies __name__/__doc__/__wrapped__ but not the
+    # defaults; introspection that reads .__defaults__ (and master's
+    # hygiene tests) must see the wrapped method's signature.
+    wrapper.__defaults__ = method.__defaults__
+    wrapper.__kwdefaults__ = method.__kwdefaults__
+    return wrapper
+
+
+class rivnetwork(_InstanceLogging):
     """
     Base rivnetwork class.
 
@@ -129,54 +226,33 @@ class rivnetwork:
         # ALWAYS writes output to log file (doesn't print if verbose is False)
         self.init_logger()
 
-        # Handle georeferencing through the raster backend
-        raster = rasters.open_raster(self.paths['input_mask'], assign_default_georef=True)
-        self.imshape = raster.shape
+        with logger.contextualize(run=self._run_id):
+            # Handle georeferencing through the raster backend
+            raster = rasters.open_raster(self.paths['input_mask'], assign_default_georef=True)
+            self.imshape = raster.shape
 
-        if raster.source_georeferenced is False:
-            logger.info('Input mask is unprojected; assigning default georeferencing.')
+            if raster.source_georeferenced is False:
+                logger.info('Input mask is unprojected; assigning default georeferencing.')
 
-        self.wkt = raster.wkt
-        self.gt = raster.gt
+            self.wkt = raster.wkt
+            self.gt = raster.gt
 
-        # Store crs as pyproj CRS object for interacting with geopandas
-        self.crs = CRS(self.wkt)
-        self.unit = gu.get_unit(self.crs)
+            # Store crs as pyproj CRS object for interacting with geopandas
+            self.crs = CRS(self.wkt)
+            self.unit = gu.get_unit(self.crs)
 
-        self.pixarea = abs(self.gt[1] * self.gt[5])
-        self.pixlen = abs(self.gt[1])
+            self.pixarea = abs(self.gt[1] * self.gt[5])
+            self.pixlen = abs(self.gt[1])
 
-        # Save exit sides
-        if exit_sides is not None:
-            self.exit_sides = exit_sides.lower()
+            # Save exit sides
+            if exit_sides is not None:
+                self.exit_sides = exit_sides.lower()
 
-        # Load mask into memory
-        self.Imask = raster.array
-
-
-    def init_logger(self):
-        """Function to initialize the logger."""
-        if self.verbose is True:
-            logger.configure(
-                handlers=[
-                    dict(sink=self.paths['log'],
-                         format="[{time:YYYY-MM-DD at HH:mm:ss}] | {message}"),
-                    dict(sink=sys.stdout,
-                         format="{message}")
-                ],
-                activation=[("", True)],
-            )
-        else:
-            logger.configure(
-                handlers=[
-                    dict(sink=self.paths['log'],
-                         format="[{time:YYYY-MM-DD at HH:mm:ss}] | {message}"),
-                ],
-                activation=[("", True)],
-            )
-        logger.info("-"*10 + " New Run " + "-"*10)
+            # Load mask into memory
+            self.Imask = raster.array
 
 
+    @_routes_logging
     def compute_network(self):
         """
         Computes the links and nodes of the channel network mask.
@@ -197,6 +273,7 @@ class rivnetwork:
         logger.info('links and nodes have been resolved.')
 
 
+    @_routes_logging
     def compute_distance_transform(self):
         """
         Computes the distance transform of the channel network mask.
@@ -214,6 +291,7 @@ class rivnetwork:
             logger.info('distance transform done.')
 
 
+    @_routes_logging
     def compute_link_width_and_length(self):
         """
         Computes widths and lengths of each link in the links dictionary and
@@ -235,6 +313,7 @@ class rivnetwork:
         logger.info('link widths and lengths computed.')
 
 
+    @_routes_logging
     def compute_junction_angles(self, weight=None):
         """
         Computes the angle at nodes where only three links are connected.
@@ -258,6 +337,7 @@ class rivnetwork:
                                              weight=weight)
 
 
+    @_routes_logging
     def get_islands(self, props=None, connectivity=2):
         """
         Finds all the islands in the binary mask and computes their morphological
@@ -329,6 +409,7 @@ class rivnetwork:
         return islands, Iislands
 
 
+    @_routes_logging
     def plot(self, *kwargs, axis=None):
         """
         Generates matplotlib plots of the network.
@@ -368,6 +449,7 @@ class rivnetwork:
             return f
 
 
+    @_routes_logging
     def save_network(self, path=None):
         """
         Writes the link and nodes dictionaries to a JSON network file.
@@ -399,6 +481,7 @@ class rivnetwork:
         return self.links, self.nodes
 
 
+    @_routes_logging
     def load_network(self, path=None):
         """
         Loads the link and nodes dictionaries from a JSON network file.
@@ -457,6 +540,7 @@ class rivnetwork:
         return A
 
 
+    @_routes_logging
     def to_geovectors(self, export='network', ftype='gpkg', metadata=None, flux_attr=None, reproject=False):
         """
         Writes the links and nodes of the network to geovectors.
@@ -561,6 +645,7 @@ class rivnetwork:
                     logger.info('Links/nodes have not been computed and thus cannot be exported to SWORD format.')
 
 
+    @_routes_logging
     def to_geotiff(self, export):
         """
         Writes geotiffs to disk.
@@ -638,6 +723,7 @@ class delta(rivnetwork):
         self.single_thread = False
 
 
+    @_routes_logging
     def skeletonize(self):
         """
         Skeletonizes the delta binary mask.
@@ -658,6 +744,7 @@ class delta(rivnetwork):
             logger.info('done with skeletonization.')
 
 
+    @_routes_logging
     def prune_network(self, path_shoreline=None, path_inletnodes=None,
                       prune_less=False):
         """
@@ -703,6 +790,7 @@ class delta(rivnetwork):
         self.finalize_ids()
 
 
+    @_routes_logging
     def assign_flow_directions(self):
         """
         Computes flow directions for each link in the delta channel network.
@@ -723,6 +811,7 @@ class delta(rivnetwork):
         self.links, self.nodes = dd.set_link_directions(self.links, self.nodes, self.imshape, manual_set_csv=self.paths['fixlinks_csv'])
 
 
+    @_routes_logging
     def plot_fluxes(self, *args, **kwargs):
         """
         Plot flux-partition results for the delta network.
@@ -747,6 +836,7 @@ class delta(rivnetwork):
         from rivgraph.deltas._plot_fluxes import plot_flux_map
         return plot_flux_map(self.links, self.nodes, self.imshape, self.gt, self.wkt, *args, **kwargs)
 
+    @_routes_logging
     def compute_topologic_metrics(self, **kwargs):
         """
         Compute connectivity and network metrics for a delta channel network.
@@ -824,6 +914,7 @@ class river(rivnetwork):
         self.single_thread = single_thread
 
 
+    @_routes_logging
     def skeletonize(self):
         """
         Skeletonizes the river binary mask.
@@ -844,6 +935,7 @@ class river(rivnetwork):
             logger.info('skeletonization is done.')
 
 
+    @_routes_logging
     def prune_network(self):
         """
         Prunes the computed river network.
@@ -859,6 +951,7 @@ class river(rivnetwork):
         self.finalize_ids()
 
 
+    @_routes_logging
     def compute_centerline(self):
         """
         Computes the centerline of the holes-filled river binary image.
@@ -873,6 +966,7 @@ class river(rivnetwork):
         logger.info('centerline computation is done.')
 
 
+    @_routes_logging
     def compute_mesh(self, grid_spacing=None, smoothing=0.1, buf_halfwidth=None, single_thread=False):
         """
         Generates an along-centerline mesh that indicates a valley-direction
@@ -947,6 +1041,7 @@ class river(rivnetwork):
         logger.info('mesh generation is done.')
 
 
+    @_routes_logging
     def assign_flow_directions(self):
         """
         Automatically sets flow directions for each link in a braided river
@@ -972,12 +1067,20 @@ class river(rivnetwork):
         logger.info('link directionality has been set.')
 
 
-class centerline():
+class centerline(_InstanceLogging):
 
-    def __init__(self, x, y, attribs=None, crs=None):
+    def __init__(self, x, y, attribs=None, crs=None, verbose=False,
+                 results_folder=None):
         """
         attribs is a dictionary with attributes; can be single values like
         average channel width or one value per coordinate like local width.
+
+        verbose : bool, optional
+            If True, print run information to the console. Default is False.
+        results_folder : str, optional
+            Directory where the log file is written; defaults to the current
+            working directory. The log file is always written, regardless of
+            verbose.
         """
         # Store original coordinates
         self.xo = x
@@ -986,19 +1089,27 @@ class centerline():
         # Store crs info if provided
         self.crs = crs
 
-        # Store attributes
-        if attribs:
-            for a in attribs.keys():
+        # Same logging contract as the network classes: the log file is
+        # always written; console output only when verbose is True.
+        self.verbose = verbose
+        self.paths = {'log': os.path.join(results_folder or os.getcwd(),
+                                          'centerline_log.log')}
+        self.init_logger()
 
-                try:
-                    alen = len(attribs[a])
-                except Exception:
-                    alen = 1
+        with logger.contextualize(run=self._run_id):
+            # Store attributes
+            if attribs:
+                for a in attribs.keys():
 
-                if alen == 1 or alen == len(x):
-                    setattr(self, a, attribs[a])
-                else:
-                    logger.info('Attribute {} does not have the proper length and is not being stored.'.format(a))
+                    try:
+                        alen = len(attribs[a])
+                    except Exception:
+                        alen = 1
+
+                    if alen == 1 or alen == len(x):
+                        setattr(self, a, attribs[a])
+                    else:
+                        logger.info('Attribute {} does not have the proper length and is not being stored.'.format(a))
 
     def __get_x_and_y(self):
 
@@ -1018,6 +1129,7 @@ class centerline():
         return x, y, vers
 
 
+    @_routes_logging
     def smooth(self, window=None, n=1, k=3, x=None, y=None):
         """
         Smooths the x and y coordinates of the centerline using a k-th order
@@ -1096,6 +1208,7 @@ class centerline():
         Cs = np.insert(Cs, 0, 0)
         return -Cs
 
+    @_routes_logging
     def Csmooth(self, window=None, x=None, y=None):
 
         if window is None:
@@ -1134,6 +1247,7 @@ class centerline():
         self.infs_C = cu.inflection_points(self.C(x, y))
 
 
+    @_routes_logging
     def intersection_points(self, x2, y2, x1=None, y1=None):
 
         if x1 is None:
@@ -1181,6 +1295,7 @@ class centerline():
             logger.info('Could not map intersections to inflection point pairs because infs_os not computed. Run infs() first.')
 
 
+    @_routes_logging
     def mig_rate_transect_matching(self, x2, y2, dt_years, path_matchers, x1=None, y1=None, mig_spacing=None, window=None, path_mig_vectors=None):
         """
         Compute migration rate using "transect matching". Requires a user to
@@ -1285,6 +1400,7 @@ class centerline():
         plt.axis('equal')
 
 
+    @_routes_logging
     def zs_plot(self, window=None):
         """
         Copied verbatim from https://github.com/zsylvester/curvaturepy/blob/master/Purus_2_migration_rates.ipynb
