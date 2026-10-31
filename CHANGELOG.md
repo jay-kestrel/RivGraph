@@ -7,6 +7,16 @@ summarize upstream history.
 
 ### Added
 
+- Julia port of the core numeric kernels (wave 1) as a sibling package under
+  `julia/`: the skeleton-to-graph walker (`skel_to_graph`, honoring the
+  `mask_to_graph` contract incl. the +40-pixel pad and ordered
+  `OrderedSet`-equivalent outputs), `link_widths_and_lengths`, the DAG
+  steady-state solver (`solve_adjacency_steady_state`), and
+  `nl_entropy_rate`. Ordered-exact parity is gated in CI against committed
+  Python-reference fixtures (walker/widths/delta plus replayable CPython
+  set-order traces); a `julia-tests` workflow runs the suite without
+  third-party Actions, and the benchmark harness covers the ported stages
+  under `julia/bench/` with results in `bench/results/`.
 - Rust native skeleton walker: `mask_to_graph.skel_to_graph` dispatches to a
   compiled `rivgraph._native` extension (PyO3 + rust-numpy, built by maturin)
   with exact Python parity (#3). The Python reference walker remains available

@@ -1,0 +1,1 @@
+{"values": {"idx": [[0, 11, 22, 33, 44, 55, 66, 77, 88, 99]], "conn": [[0, 1]], "id": [0], "n_networks": 1}, "types": {"idx": "list", "conn": "list", "id": "OrderedSet", "n_networks": "int"}}
