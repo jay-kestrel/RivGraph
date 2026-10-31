@@ -10,7 +10,6 @@ walker fixtures) so hash-table behavior matches the oracle environment.
 import json
 import random
 
-import numpy as np
 
 rng = random.Random(20261030)
 
