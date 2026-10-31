@@ -120,6 +120,11 @@ def _routes_logging(method):
             return method(self, *args, **kwargs)
         with logger.contextualize(run=run_id):
             return method(self, *args, **kwargs)
+    # functools.wraps copies __name__/__doc__/__wrapped__ but not the
+    # defaults; introspection that reads .__defaults__ (and master's
+    # hygiene tests) must see the wrapped method's signature.
+    wrapper.__defaults__ = method.__defaults__
+    wrapper.__kwdefaults__ = method.__kwdefaults__
     return wrapper
 
 
